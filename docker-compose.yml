@@ -1,0 +1,14 @@
+services:
+  discord-mcp:
+    container_name: discord-mcp
+    build:
+      context: .
+    image: vektrel/discord-mcp:latest
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DISCORD_TOKEN: ${DISCORD_TOKEN}
+      DISCORD_GUILD_ID: ${DISCORD_GUILD_ID:-}
+      DISCORD_MCP_DRY_RUN_DEFAULT: ${DISCORD_MCP_DRY_RUN_DEFAULT:-true}
+      PORT: "3000"
