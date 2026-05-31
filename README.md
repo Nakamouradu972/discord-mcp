@@ -26,7 +26,7 @@ This edition rewrites and extends the project to target **full coverage of the p
 
 ## Features
 
-105 tools across 20 domains, every write operation routed through the shared guardrail pipeline.
+108 tools across 21 domains, every write operation routed through the shared guardrail pipeline.
 
 | Domain | Capabilities |
 |---|---|
@@ -48,6 +48,7 @@ This edition rewrites and extends the project to target **full coverage of the p
 | **Audit log** | Query with user / action-type filters |
 | **Threads** | Create, edit, delete, list, membership |
 | **Slash commands** | Register, list, delete application commands |
+| **Real-time** | Gateway worker + event queue; poll events and reply to interactions (opt-in) |
 | **Raw API** | `discord_raw`: REST passthrough for any uncovered route |
 
 See [`docs/EXTENSION_PLAN.md`](docs/EXTENSION_PLAN.md) for per-domain status, tools, required permissions and intents, and [`docs/LLM_GUIDE.md`](docs/LLM_GUIDE.md) for how an assistant should drive the server (guardrail workflow, rich messages, and reaching any endpoint via `discord_raw`). For the planned real-time / interaction-handling architecture (gateway worker + event queue, Docker remote deployment, Claude Desktop over HTTP), see [`docs/REALTIME_DESIGN.md`](docs/REALTIME_DESIGN.md).
@@ -208,6 +209,7 @@ A tool's classification (`read` / `write` / `destructive`) is declared once and 
 - **Threads:** `create_thread`, `edit_thread`, `delete_thread`, `list_threads`, `add_thread_member`, `remove_thread_member`
 - **Slash commands:** `list_application_commands`, `register_application_command`, `delete_application_command`
 - **Voice & stage:** `start_stage_instance`, `edit_stage_instance`, `stop_stage_instance`, `disconnect_member`
+- **Real-time** (opt-in, `DISCORD_MCP_EVENTS=true`): `poll_events`, `respond_interaction`, `complete_event`
 - **Raw:** `discord_raw`
 
 ---
@@ -230,7 +232,8 @@ src/
     base/       channels/   roles/      messages/   reactions/  forum/
     webhooks/   members/    moderation/ guild/      invites/    events/
     polls/      emojis/     automod/    audit/      threads/    commands/
-    voice/      raw/
+    voice/      realtime/   raw/
+  gateway/     # opt-in gateway worker (defers interactions, enqueues events)
   index.ts     # stdio entrypoint
   app.ts       # HTTP streamable entrypoint
 ```

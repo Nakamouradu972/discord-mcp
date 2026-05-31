@@ -1,8 +1,10 @@
 #!/usr/bin/env node
+import "./core/warnings.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { loadConfig } from "./core/env.js";
 import { loginClient, createClient } from "./core/discordClient.js";
 import { buildServer } from "./server.js";
+import { setupEvents } from "./gateway/setup.js";
 
 /**
  * stdio entrypoint (default transport for local MCP clients such as Claude
@@ -22,7 +24,8 @@ async function main(): Promise<void> {
     return createClient();
   }) : createClient();
 
-  const server = buildServer({ client, config });
+  const queue = setupEvents(client);
+  const server = buildServer({ client, config, queue });
   const transport = new StdioServerTransport();
   await server.connect(transport);
   process.stderr.write("[discord-mcp] stdio server ready.\n");

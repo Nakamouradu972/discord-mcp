@@ -18,6 +18,7 @@ import { auditTools } from "./audit/index.js";
 import { threadTools } from "./threads/index.js";
 import { commandTools } from "./commands/index.js";
 import { voiceTools } from "./voice/index.js";
+import { realtimeTools } from "./realtime/index.js";
 import { rawTools } from "./raw/index.js";
 
 /** Every tool exposed by the server, aggregated from each domain module. */
@@ -41,5 +42,6 @@ export const allTools: AnyToolDefinition[] = [
   ...threadTools,
   ...commandTools,
   ...voiceTools,
+  ...realtimeTools,
   ...rawTools,
 ];
