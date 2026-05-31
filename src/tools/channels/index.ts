@@ -197,8 +197,58 @@ const removeChannelPermissions = defineTool({
   },
 });
 
+const listChannels = defineTool({
+  name: "list_channels",
+  description: "List all channels of a server with their type and id.",
+  category: "read",
+  permissions: ["View Channel"],
+  intents: ["Guilds"],
+  inputSchema: {
+    guildId: z.string().optional().describe("Target server id (defaults to DISCORD_GUILD_ID)."),
+  },
+  execute: async (a, ctx) => {
+    const guild = await resolveGuild(ctx, a.guildId);
+    const channels = await guild.channels.fetch();
+    if (channels.size === 0) return `No channels in ${guild.name}.`;
+    const lines = channels
+      .filter((c): c is NonNullable<typeof c> => c !== null)
+      .sort((x, y) => x.rawPosition - y.rawPosition)
+      .map((c) => `- [${ChannelType[c.type]}] ${c.name} (${c.id})`);
+    return `${lines.length} channel(s) in ${guild.name}:\n${lines.join("\n")}`;
+  },
+});
+
+const getChannelInfo = defineTool({
+  name: "get_channel_info",
+  description: "Get details about a channel: type, topic, parent category, position and slowmode.",
+  category: "read",
+  permissions: ["View Channel"],
+  intents: ["Guilds"],
+  inputSchema: {
+    guildId: z.string().optional().describe("Target server id (defaults to DISCORD_GUILD_ID)."),
+    channelId: z.string().describe("Channel id."),
+  },
+  execute: async (a, ctx) => {
+    const guild = await resolveGuild(ctx, a.guildId);
+    const channel = await resolveGuildChannel(guild, a.channelId);
+    const topic = "topic" in channel ? (channel.topic ?? "(none)") : "(n/a)";
+    const slowmode = "rateLimitPerUser" in channel ? `${channel.rateLimitPerUser ?? 0}s` : "(n/a)";
+    const position = "rawPosition" in channel ? String(channel.rawPosition) : "(n/a)";
+    return [
+      `**${channel.name}** (${channel.id})`,
+      `Type: ${ChannelType[channel.type]}`,
+      `Parent: ${channel.parentId ?? "(none)"}`,
+      `Position: ${position}`,
+      `Topic: ${topic}`,
+      `Slowmode: ${slowmode}`,
+    ].join("\n");
+  },
+});
+
 /** Channel & category tools. */
 export const channelTools: AnyToolDefinition[] = [
+  listChannels,
+  getChannelInfo,
   createTextChannel,
   createVoiceChannel,
   createForumChannel,
