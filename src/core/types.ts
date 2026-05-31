@@ -2,6 +2,7 @@ import type { z } from "zod";
 import type { Client } from "discord.js";
 import type { AuditLogger } from "./audit.js";
 import type { ServerConfig } from "./env.js";
+import type { EventQueue } from "./eventQueue.js";
 
 /**
  * Classification that drives the guardrail behaviour of a tool.
@@ -21,6 +22,11 @@ export interface ToolContext {
   audit: AuditLogger;
   /** Resolved server configuration (default guild, dry-run default, …). */
   config: ServerConfig;
+  /**
+   * Shared event queue, present only when the gateway worker is enabled.
+   * The `events` domain tools require it; they error clearly when it is absent.
+   */
+  queue?: EventQueue;
 }
 
 /**

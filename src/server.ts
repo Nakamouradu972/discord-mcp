@@ -4,10 +4,11 @@ import { AuditLogger } from "./core/audit.js";
 import { loadConfig, type ServerConfig } from "./core/env.js";
 import { registerTool } from "./core/registerTool.js";
 import type { AnyToolDefinition, ToolContext } from "./core/types.js";
+import type { EventQueue } from "./core/eventQueue.js";
 import { allTools } from "./tools/index.js";
 
 /** Package metadata reported in the MCP handshake. */
-export const SERVER_INFO = { name: "discord-mcp", version: "2.4.0" } as const;
+export const SERVER_INFO = { name: "discord-mcp", version: "2.5.0" } as const;
 
 /**
  * Build a fully wired {@link McpServer} with every tool registered behind the
@@ -18,12 +19,14 @@ export function buildServer(options: {
   client: Client;
   config?: ServerConfig;
   tools?: AnyToolDefinition[];
+  queue?: EventQueue;
 }): McpServer {
   const config = options.config ?? loadConfig();
   const ctx: ToolContext = {
     client: options.client,
     audit: new AuditLogger(config.auditFile, config.actor),
     config,
+    queue: options.queue,
   };
 
   const server = new McpServer(SERVER_INFO);
