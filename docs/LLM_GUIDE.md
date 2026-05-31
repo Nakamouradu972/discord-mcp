@@ -120,3 +120,8 @@ event stream, so:
 For one-shot administration (managing channels, roles, members, moderation,
 events, content, etc.) the coverage is effectively complete: typed tools for the
 common cases plus `discord_raw` for the long tail.
+
+> A design to lift the real-time / interaction limitation (an always-on gateway
+> worker that defers interactions and enqueues events, plus `poll_events` /
+> `respond_interaction` tools) is specified in
+> [`REALTIME_DESIGN.md`](./REALTIME_DESIGN.md). Not yet implemented.

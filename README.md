@@ -50,7 +50,7 @@ This edition rewrites and extends the project to target **full coverage of the p
 | **Slash commands** | Register, list, delete application commands |
 | **Raw API** | `discord_raw`: REST passthrough for any uncovered route |
 
-See [`docs/EXTENSION_PLAN.md`](docs/EXTENSION_PLAN.md) for per-domain status, tools, required permissions and intents, and [`docs/LLM_GUIDE.md`](docs/LLM_GUIDE.md) for how an assistant should drive the server (guardrail workflow, rich messages, and reaching any endpoint via `discord_raw`).
+See [`docs/EXTENSION_PLAN.md`](docs/EXTENSION_PLAN.md) for per-domain status, tools, required permissions and intents, and [`docs/LLM_GUIDE.md`](docs/LLM_GUIDE.md) for how an assistant should drive the server (guardrail workflow, rich messages, and reaching any endpoint via `discord_raw`). For the planned real-time / interaction-handling architecture (gateway worker + event queue, Docker remote deployment, Claude Desktop over HTTP), see [`docs/REALTIME_DESIGN.md`](docs/REALTIME_DESIGN.md).
 
 ---
 
