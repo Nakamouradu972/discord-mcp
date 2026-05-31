@@ -66,4 +66,21 @@ describe("base tools", () => {
     expect(payload.embeds[0].title).toBe("Report");
     expect(payload.embeds[0].description).toBe("d");
   });
+
+  it("sets the bot presence with an activity", async () => {
+    const setPresence = vi.fn();
+    const ctx = makeCtx({ user: { setPresence } } as any);
+    await getTool(baseTools, "set_presence").execute(
+      { status: "dnd", activityType: "Watching", activityText: "the logs" },
+      ctx,
+    );
+    const arg = setPresence.mock.calls[0][0];
+    expect(arg.status).toBe("dnd");
+    expect(arg.activities[0].name).toBe("the logs");
+  });
+
+  it("set_presence errors when not logged in", async () => {
+    const ctx = makeCtx({} as any);
+    await expect(getTool(baseTools, "set_presence").execute({ status: "online" }, ctx)).rejects.toThrow(/not logged in/);
+  });
 });

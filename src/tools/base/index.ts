@@ -1,6 +1,16 @@
 import { z } from "zod";
+import { ActivityType, type PresenceStatusData } from "discord.js";
 import { defineTool, type AnyToolDefinition } from "../../core/types.js";
 import { buildMessagePayload, embedSchema, buttonSchema } from "../../core/messagePayload.js";
+
+const ACTIVITY_TYPES = ["Playing", "Streaming", "Listening", "Watching", "Competing"] as const;
+const ACTIVITY_TYPE_MAP = {
+  Playing: ActivityType.Playing,
+  Streaming: ActivityType.Streaming,
+  Listening: ActivityType.Listening,
+  Watching: ActivityType.Watching,
+  Competing: ActivityType.Competing,
+} as const;
 import { resolveGuild } from "../../core/resolve.js";
 
 const login = defineTool({
@@ -116,5 +126,30 @@ const sendEmbed = defineTool({
   },
 });
 
+const setPresence = defineTool({
+  name: "set_presence",
+  description: "Set the bot's presence: online status and an optional activity (e.g. Playing/Watching ...).",
+  category: "write",
+  permissions: [],
+  intents: ["Guilds"],
+  inputSchema: {
+    status: z.enum(["online", "idle", "dnd", "invisible"]).optional().describe("Online status (default online)."),
+    activityType: z.enum(ACTIVITY_TYPES).optional().describe("Activity verb shown before the text."),
+    activityText: z.string().max(128).optional().describe("Activity text (required if activityType is set)."),
+    streamUrl: z.string().url().optional().describe("Twitch/YouTube URL (Streaming activity only)."),
+  },
+  plan: (a) =>
+    `Set presence: status=${a.status ?? "online"}` +
+    (a.activityType ? `, ${a.activityType} ${a.activityText ?? ""}` : ""),
+  execute: async (a, ctx) => {
+    if (!ctx.client.user) throw new Error("Bot is not logged in; cannot set presence.");
+    const activities = a.activityType
+      ? [{ name: a.activityText ?? "", type: ACTIVITY_TYPE_MAP[a.activityType], url: a.streamUrl }]
+      : [];
+    ctx.client.user.setPresence({ status: (a.status ?? "online") as PresenceStatusData, activities });
+    return `Updated bot presence (status: ${a.status ?? "online"}).`;
+  },
+});
+
 /** Base/connection tools. */
-export const baseTools: AnyToolDefinition[] = [login, listServers, getServerInfo, send, sendEmbed];
+export const baseTools: AnyToolDefinition[] = [login, listServers, getServerInfo, send, sendEmbed, setPresence];
