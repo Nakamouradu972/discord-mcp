@@ -73,14 +73,18 @@ export function mockClientWithChannel(channel: unknown): Partial<Client> {
   } as unknown as Partial<Client>;
 }
 
-/** Build a discord.js-like Collection from entries (Map plus `.map`/`.filter`). */
+/**
+ * Build a discord.js-like Collection from entries: a Map augmented with the
+ * subset of helpers our tools use (`map`→array, `filter`/`sort`→Collection).
+ */
 export function collection<V>(entries: [string, V][]): Map<string, V> {
   const map = new Map<string, V>(entries);
+  const idOf = (v: V, k: string): string => ((v as any)?.id ?? k) as string;
   (map as any).map = (fn: (v: V, k: string) => unknown) =>
     Array.from(map.entries()).map(([k, v]) => fn(v, k));
-  (map as any).filter = (fn: (v: V) => boolean) => {
-    const next = collection([...map.entries()].filter(([, v]) => fn(v)));
-    return next;
-  };
+  (map as any).filter = (fn: (v: V, k: string) => boolean) =>
+    collection([...map.entries()].filter(([k, v]) => fn(v, k)));
+  (map as any).sort = (fn: (a: V, b: V) => number) =>
+    collection([...map.entries()].sort(([, a], [, b]) => fn(a, b)).map(([k, v]) => [idOf(v, k), v] as [string, V]));
   return map;
 }

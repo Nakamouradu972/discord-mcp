@@ -1,6 +1,6 @@
 {
   "name": "discord-mcp",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Model Context Protocol server for the Discord API (TypeScript / discord.js) with a generic guardrails layer — VekTrel Edition.",
   "type": "module",
   "license": "MIT",

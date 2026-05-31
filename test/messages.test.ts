@@ -36,6 +36,19 @@ describe("message tools", () => {
     expect(result).toContain("2 message(s)");
   });
 
+  it("replies to a message", async () => {
+    const reply = vi.fn(async () => ({ id: "m2" }));
+    const message = { reply };
+    const channel = textChannel({ messages: { fetch: vi.fn(async () => message) } });
+    const ctx = makeCtx(mockClientWithChannel(channel));
+    const result = await getTool(messageTools, "reply_to_message").execute(
+      { channelId: "c1", messageId: "m1", content: "hey" },
+      ctx,
+    );
+    expect(reply).toHaveBeenCalledWith("hey");
+    expect(result).toContain("m2");
+  });
+
   it("classifies destructive vs read", () => {
     expect(getTool(messageTools, "bulk_delete_messages").category).toBe("destructive");
     expect(getTool(messageTools, "delete_message").category).toBe("destructive");

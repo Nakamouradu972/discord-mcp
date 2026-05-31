@@ -4,6 +4,17 @@ All notable changes to this project are documented here. The project follows
 [Semantic Versioning](https://semver.org/): given a stack rewrite that is not
 backward-compatible, this release is a **major** bump.
 
+## [2.1.0] — 2026-05-31
+
+### Added (backward-compatible)
+- **channels:** `list_channels` and `get_channel_info` read tools — the domain
+  could create/edit/delete channels but not list or inspect them.
+- **messages:** `reply_to_message` — send a message as a reply to an existing one.
+- Unit tests for the core `loadConfig` (env parsing) and `AuditLogger` (JSONL
+  output, secret redaction, failure-safety) modules.
+
+Tool count: **86 → 89** (29 read · 43 write · 17 destructive).
+
 ## [2.0.0] — 2026-05-31
 
 ### ⚠️ Breaking change — full rewrite (Java → TypeScript)
