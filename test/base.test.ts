@@ -19,7 +19,8 @@ describe("base tools", () => {
     const channel = { isTextBased: () => true, send };
     const ctx = makeCtx(mockClientWithChannel(channel));
     const result = await getTool(baseTools, "send").execute({ channelId: "c1", message: "hi" }, ctx);
-    expect(send).toHaveBeenCalledWith("hi");
+    // send now always builds a rich payload object; plain text rides in `content`.
+    expect(send.mock.calls[0][0]).toMatchObject({ content: "hi" });
     expect(result).toContain("msg1");
   });
 
