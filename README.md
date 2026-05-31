@@ -26,7 +26,7 @@ This edition rewrites and extends the project to target **full coverage of the p
 
 ## Features
 
-86 tools across 18 domains, every write operation routed through the shared guardrail pipeline.
+89 tools across 18 domains, every write operation routed through the shared guardrail pipeline.
 
 | Domain | Capabilities |
 |---|---|
@@ -181,9 +181,9 @@ A tool's classification (`read` / `write` / `destructive`) is declared once and 
 > Prefix `discord_`. See [`docs/EXTENSION_PLAN.md`](docs/EXTENSION_PLAN.md) for permissions/intents per tool.
 
 - **Base:** `login`, `list_servers`, `get_server_info`, `send`
-- **Channels:** `create_text_channel`, `create_voice_channel`, `create_forum_channel`, `create_category`, `edit_channel`, `edit_category`, `delete_channel`, `delete_category`, `set_channel_permissions`, `remove_channel_permissions`
+- **Channels:** `list_channels`, `get_channel_info`, `create_text_channel`, `create_voice_channel`, `create_forum_channel`, `create_category`, `edit_channel`, `edit_category`, `delete_channel`, `delete_category`, `set_channel_permissions`, `remove_channel_permissions`
 - **Roles:** `list_roles`, `create_role`, `edit_role`, `delete_role`, `assign_role`, `remove_role`
-- **Messages / reactions:** `get_channel_messages`, `read_messages`, `get_message`, `search_messages`, `edit_message`, `delete_message`, `bulk_delete_messages`, `pin_message`, `unpin_message`, `add_reaction`, `add_multiple_reactions`, `remove_reaction`, `get_reaction_users`, `clear_reactions`
+- **Messages / reactions:** `get_channel_messages`, `read_messages`, `get_message`, `search_messages`, `edit_message`, `reply_to_message`, `delete_message`, `bulk_delete_messages`, `pin_message`, `unpin_message`, `add_reaction`, `add_multiple_reactions`, `remove_reaction`, `get_reaction_users`, `clear_reactions`
 - **Forum:** `get_forum_channels`, `create_forum_post`, `get_forum_post`, `list_forum_threads`, `reply_to_forum`, `get_forum_tags`, `set_forum_tags`, `update_forum_post`, `delete_forum_post`
 - **Webhooks:** `create_webhook`, `send_webhook_message`, `edit_webhook`, `delete_webhook`
 - **Members:** `list_members`, `get_member`, `edit_member`

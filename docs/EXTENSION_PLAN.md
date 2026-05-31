@@ -9,9 +9,9 @@ guardrails layer (dry-run, confirmation, audit, rate-limit, zod validation).
 |---|---|---|---|---|
 | Core guardrails | ✅ | dry-run, confirmation, audit log, rate-limit retry, zod validation | — | — |
 | base | ✅ | `login`, `list_servers`, `get_server_info`, `send` | Send Messages, View Channel | Guilds |
-| channels | ✅ | `create_text_channel`, `create_voice_channel`, `create_forum_channel`, `create_category`, `edit_channel`, `edit_category`, `delete_channel`, `delete_category`, `set_channel_permissions`, `remove_channel_permissions` | Manage Channels, Manage Roles | Guilds |
+| channels | ✅ | `list_channels`, `get_channel_info`, `create_text_channel`, `create_voice_channel`, `create_forum_channel`, `create_category`, `edit_channel`, `edit_category`, `delete_channel`, `delete_category`, `set_channel_permissions`, `remove_channel_permissions` | Manage Channels, Manage Roles, View Channel | Guilds |
 | roles | ✅ | `list_roles`, `create_role`, `edit_role`, `delete_role`, `assign_role`, `remove_role` | Manage Roles | Guilds, GuildMembers |
-| messages | ✅ | `get_channel_messages`, `read_messages`, `get_message`, `search_messages`, `edit_message`, `delete_message`, `bulk_delete_messages`, `pin_message`, `unpin_message` | Send/Manage Messages, Read Message History | GuildMessages, MessageContent |
+| messages | ✅ | `get_channel_messages`, `read_messages`, `get_message`, `search_messages`, `edit_message`, `reply_to_message`, `delete_message`, `bulk_delete_messages`, `pin_message`, `unpin_message` | Send/Manage Messages, Read Message History | GuildMessages, MessageContent |
 | reactions | ✅ | `add_reaction`, `add_multiple_reactions`, `remove_reaction`, `get_reaction_users`, `clear_reactions` | Add Reactions, Manage Messages | GuildMessageReactions |
 | forum | ✅ | `get_forum_channels`, `create_forum_post`, `get_forum_post`, `list_forum_threads`, `reply_to_forum`, `get_forum_tags`, `set_forum_tags`, `update_forum_post`, `delete_forum_post` | Create Public Threads, Send Messages in Threads, Manage Threads/Channels | Guilds |
 | webhooks | ✅ | `create_webhook`, `send_webhook_message`, `edit_webhook`, `delete_webhook` | Manage Webhooks | Guilds |
@@ -35,7 +35,7 @@ Each tool declares a guardrail **category** that drives the write-path behaviour
 - **write** — mutates state; **dry-run by default**, executes only with `dryRun: false`.
 - **destructive** — irreversible / high impact; dry-run by default **and** requires `confirm: true`.
 
-Current distribution: **27 read · 42 write · 17 destructive** (86 tools total).
+Current distribution: **29 read · 43 write · 17 destructive** (89 tools total).
 
 Destructive tools include: every `delete_*`, `ban`, `kick`, `bulk_delete_messages`,
 `clear_reactions`, `remove_channel_permissions`, `delete_forum_post`,
