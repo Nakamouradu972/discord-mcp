@@ -139,5 +139,6 @@ is reachable via `discord_raw`.
   gateway connection, so nothing reacts to members' messages or interactions.
 - The audit log (`/data/audit/audit-log.jsonl` in the `mcp-data` volume) records
   every action with the `claude-desktop` actor — useful to review what was done.
-- Updating: `docker compose pull || docker compose build` then
-  `docker compose up -d`.
+- Updating: pull the latest code, then `docker compose build` and
+  `docker compose up -d`. The image is built locally on the host; nothing is
+  pulled from a registry.
