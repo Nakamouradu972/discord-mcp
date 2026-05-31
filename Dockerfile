@@ -23,6 +23,10 @@ COPY package.json ./
 ENV DISCORD_TOKEN=""
 ENV DISCORD_GUILD_ID=""
 ENV PORT=3000
+# Bind to all interfaces inside the container; restrict exposure via the
+# Docker network / reverse proxy, and set DISCORD_MCP_AUTH_TOKEN before
+# exposing the endpoint. See docs/REALTIME_DESIGN.md §8.
+ENV DISCORD_MCP_BIND=0.0.0.0
 EXPOSE 3000
 
 # Default to the HTTP streamable transport for container/self-host scenarios.

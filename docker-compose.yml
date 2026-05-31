@@ -5,10 +5,25 @@ services:
       context: .
     image: vektrel/discord-mcp:latest
     restart: unless-stopped
-    ports:
-      - "3000:3000"
+    # Internal only: do NOT publish the port directly. Put a TLS reverse proxy
+    # (Caddy/Traefik/nginx) in front and enable DISCORD_MCP_AUTH_TOKEN before
+    # exposing it. For purely local use, you may map "127.0.0.1:3000:3000".
+    expose:
+      - "3000"
+    volumes:
+      # Persist the audit log (and, later, the event queue) outside the container.
+      - mcp-data:/data
     environment:
       DISCORD_TOKEN: ${DISCORD_TOKEN}
       DISCORD_GUILD_ID: ${DISCORD_GUILD_ID:-}
       DISCORD_MCP_DRY_RUN_DEFAULT: ${DISCORD_MCP_DRY_RUN_DEFAULT:-true}
+      # Bearer token required on /mcp when set (recommended for remote exposure).
+      DISCORD_MCP_AUTH_TOKEN: ${DISCORD_MCP_AUTH_TOKEN:-}
+      DISCORD_MCP_ALLOWED_HOSTS: ${DISCORD_MCP_ALLOWED_HOSTS:-}
+      DISCORD_MCP_AUDIT_FILE: /data/audit/audit-log.jsonl
+      DISCORD_MCP_ACTOR: ${DISCORD_MCP_ACTOR:-claude-desktop}
       PORT: "3000"
+      DISCORD_MCP_BIND: "0.0.0.0"
+
+volumes:
+  mcp-data:

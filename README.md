@@ -158,9 +158,17 @@ The server **boots even without a token** so MCP clients can connect and list to
 ### HTTP transport (self-host)
 
 ```bash
-DISCORD_TOKEN=your_token node build/app.js --transport http --port 3000
-# Endpoint: http://localhost:3000/mcp
+DISCORD_TOKEN=your_token \
+DISCORD_MCP_AUTH_TOKEN=a_long_random_secret \
+node build/app.js --transport http --port 3000
+# Endpoint: http://localhost:3000/mcp  (send: Authorization: Bearer <secret>)
 ```
+
+The HTTP endpoint binds to `127.0.0.1` by default. For remote exposure, set
+`DISCORD_MCP_AUTH_TOKEN` (bearer auth, returns 401 without it), optionally
+`DISCORD_MCP_ALLOWED_HOSTS` / `DISCORD_MCP_ALLOWED_ORIGINS`, and put a TLS reverse
+proxy in front. Connect Claude Desktop over HTTP with the `mcp-remote` bridge —
+see [`docs/REALTIME_DESIGN.md`](docs/REALTIME_DESIGN.md) §7–§8.
 
 ---
 
