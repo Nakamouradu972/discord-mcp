@@ -58,4 +58,13 @@ describe("channel tools", () => {
     expect(result).toContain("Slowmode: 5s");
     expect(result).toContain("Topic: hi");
   });
+
+  it("repositions a channel", async () => {
+    const setPosition = vi.fn(async () => ({}));
+    const channel = { setPosition };
+    const guild = mockGuild({ channels: { fetch: vi.fn(async () => channel) } });
+    const ctx = makeCtx(mockClientWithGuild(guild));
+    await getTool(channelTools, "set_channel_position").execute({ channelId: "c1", position: 2 }, ctx);
+    expect(setPosition).toHaveBeenCalledWith(2);
+  });
 });

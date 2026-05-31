@@ -245,6 +245,27 @@ const getChannelInfo = defineTool({
   },
 });
 
+const setChannelPosition = defineTool({
+  name: "set_channel_position",
+  description: "Move a channel to a new position in the channel list.",
+  category: "write",
+  permissions: ["Manage Channels"],
+  intents: ["Guilds"],
+  inputSchema: {
+    guildId: z.string().optional().describe("Target server id (defaults to DISCORD_GUILD_ID)."),
+    channelId: z.string().describe("Channel id."),
+    position: z.number().int().min(0).describe("New zero-based position."),
+  },
+  plan: (a) => `Move channel ${a.channelId} to position ${a.position}.`,
+  execute: async (a, ctx) => {
+    const guild = await resolveGuild(ctx, a.guildId);
+    const channel = await resolveGuildChannel(guild, a.channelId);
+    if (!("setPosition" in channel)) throw new Error("This channel type cannot be repositioned.");
+    await channel.setPosition(a.position);
+    return `Moved channel ${a.channelId} to position ${a.position}.`;
+  },
+});
+
 /** Channel & category tools. */
 export const channelTools: AnyToolDefinition[] = [
   listChannels,
@@ -257,6 +278,7 @@ export const channelTools: AnyToolDefinition[] = [
   editCategory,
   deleteChannel,
   deleteCategory,
+  setChannelPosition,
   setChannelPermissions,
   removeChannelPermissions,
 ];
