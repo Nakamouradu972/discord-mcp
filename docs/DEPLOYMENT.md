@@ -2,9 +2,9 @@
 
 This is the concrete setup for the intended use case: run this MCP **in Docker on
 a remote host** and drive it from **Claude Desktop over HTTP** to create,
-organise and manage your Discord server. The real-time gateway worker is **off**
-in this scenario (you don't need the reactive bot); only the REST admin tools are
-used.
+organise and manage your Discord server. This is an **administration** server
+that issues REST calls on demand — it does not open a gateway connection and has
+no reactive bot; only the admin tools are used.
 
 ## 0. Prerequisites
 
@@ -22,8 +22,6 @@ DISCORD_TOKEN=your_bot_token
 DISCORD_GUILD_ID=your_default_server_id        # optional but handy
 DISCORD_MCP_AUTH_TOKEN=$(openssl rand -hex 32)  # generate a long random secret
 DISCORD_MCP_ACTOR=claude-desktop
-# Real-time worker stays OFF for admin-only use:
-# DISCORD_MCP_EVENTS is intentionally left unset.
 ```
 
 Generate the auth token once and keep it; Claude Desktop will send it as a
@@ -137,8 +135,8 @@ is reachable via `discord_raw`.
 
 ## 7. Notes
 
-- The real-time worker (`DISCORD_MCP_EVENTS`) is **left off** for admin-only use;
-  nothing about it runs or connects to the gateway in this setup.
+- This server is **admin-only**: it makes REST calls on demand and never opens a
+  gateway connection, so nothing reacts to members' messages or interactions.
 - The audit log (`/data/audit/audit-log.jsonl` in the `mcp-data` volume) records
   every action with the `claude-desktop` actor — useful to review what was done.
 - Updating: `docker compose pull || docker compose build` then

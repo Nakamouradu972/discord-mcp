@@ -11,7 +11,7 @@ services:
     expose:
       - "3000"
     volumes:
-      # Persist the audit log (and, later, the event queue) outside the container.
+      # Persist the audit log outside the container.
       - mcp-data:/data
     environment:
       DISCORD_TOKEN: ${DISCORD_TOKEN}
@@ -24,10 +24,6 @@ services:
       DISCORD_MCP_ACTOR: ${DISCORD_MCP_ACTOR:-claude-desktop}
       PORT: "3000"
       DISCORD_MCP_BIND: "0.0.0.0"
-      # Real-time gateway worker + event queue (opt-in). Only ONE process may
-      # own the gateway per bot token — keep this enabled on a single instance.
-      DISCORD_MCP_EVENTS: ${DISCORD_MCP_EVENTS:-}
-      DISCORD_MCP_QUEUE_FILE: /data/events.sqlite
 
 volumes:
   mcp-data:

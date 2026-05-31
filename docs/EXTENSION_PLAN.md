@@ -27,7 +27,6 @@ guardrails layer (dry-run, confirmation, audit, rate-limit, zod validation).
 | threads | ✅ | `create_thread`, `edit_thread`, `delete_thread`, `list_threads`, `add_thread_member`, `remove_thread_member` | Create Public Threads, Manage Threads | Guilds |
 | commands | ✅ | `list_application_commands`, `register_application_command`, `delete_application_command` | — (bot owner / application scope) | Guilds |
 | voice | ✅ | `start_stage_instance`, `edit_stage_instance`, `stop_stage_instance`, `disconnect_member` | Manage Channels, Mute/Move Members | Guilds, GuildVoiceStates |
-| realtime | ✅ | `poll_events`, `respond_interaction`, `complete_event` (require the gateway worker, `DISCORD_MCP_EVENTS=true`) | — (interaction webhook) | Guilds, GuildMessages, MessageContent |
 | raw | ✅ | `discord_raw` (generic REST passthrough) | depends on the endpoint called | — |
 
 ## Guardrail classification
@@ -38,7 +37,7 @@ Each tool declares a guardrail **category** that drives the write-path behaviour
 - **write** — mutates state; **dry-run by default**, executes only with `dryRun: false`.
 - **destructive** — irreversible / high impact; dry-run by default **and** requires `confirm: true`.
 
-Current distribution: **32 read · 55 write · 21 destructive** (108 tools total).
+Current distribution: **31 read · 53 write · 21 destructive** (105 tools total).
 
 Destructive tools include: every `delete_*`, `ban`, `kick`, `bulk_delete_messages`,
 `clear_reactions`, `remove_channel_permissions`, `delete_forum_post`,
@@ -54,9 +53,10 @@ Destructive tools include: every `delete_*`, `ban`, `kick`, `bulk_delete_message
   id+token or URL directly).
 - Privileged intents (`MessageContent`, `GuildMembers`) must be enabled in the
   Discord Developer Portal in addition to being requested by the client.
-- **Interactions are not handled.** Slash commands can be registered and buttons
-  can be sent, but the server does not consume gateway events, so it cannot
-  reply to a command invocation or a button click. Link buttons work standalone.
+- **Interactions are not handled.** This is an administration (REST) server with
+  no gateway connection. Slash commands can be registered and buttons can be
+  sent, but the server does not consume gateway events, so it cannot reply to a
+  command invocation or a button click. Link buttons work standalone.
   See [`LLM_GUIDE.md`](./LLM_GUIDE.md) §6.
 - Anything without a typed tool is reachable via `discord_raw`. See
   [`LLM_GUIDE.md`](./LLM_GUIDE.md) §5.
