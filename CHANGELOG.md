@@ -4,6 +4,24 @@ All notable changes to this project are documented here. The project follows
 [Semantic Versioning](https://semver.org/): given a stack rewrite that is not
 backward-compatible, this release is a **major** bump.
 
+## [2.4.0] — 2026-05-31
+
+### Added — HTTP transport security (real-time Option B, phase 1)
+- **Bearer-token authentication** on the HTTP `/mcp` endpoint via
+  `DISCORD_MCP_AUTH_TOKEN` (requests without a valid token get 401). Empty token
+  keeps the endpoint open for localhost/dev.
+- **DNS-rebinding protection**: optional `DISCORD_MCP_ALLOWED_HOSTS` /
+  `DISCORD_MCP_ALLOWED_ORIGINS` allow-lists.
+- **Configurable bind host** via `DISCORD_MCP_BIND` (defaults to `127.0.0.1`;
+  the Docker image sets `0.0.0.0` for use behind a reverse proxy). A warning is
+  logged when the endpoint runs unauthenticated.
+- `docker-compose.yml` reworked for a secure remote deployment: internal-only
+  `expose`, a mounted `mcp-data` volume for the audit log (and future event
+  queue), and auth/actor env wiring. Documented in `docs/REALTIME_DESIGN.md` §8.
+
+This is **phase 1** of the real-time design (security first); the gateway worker,
+event queue and `poll_events` / `respond_interaction` tools follow.
+
 ## [2.3.0] — 2026-05-31
 
 ### Added (backward-compatible)

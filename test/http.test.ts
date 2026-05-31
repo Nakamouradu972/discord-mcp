@@ -10,7 +10,12 @@ let url: string;
 
 beforeAll(async () => {
   // The MCP initialize handshake never touches Discord, so a stub client is enough.
-  const app = createHttpApp({} as unknown as Client, testConfig());
+  // Require a bearer token to also exercise the security middleware in-process.
+  const app = createHttpApp({} as unknown as Client, testConfig(), {
+    authToken: "test-secret",
+    allowedHosts: [],
+    allowedOrigins: [],
+  });
   server = app.listen(0);
   await new Promise<void>((resolve) => server.once("listening", resolve));
   url = `http://127.0.0.1:${(server.address() as AddressInfo).port}/mcp`;
@@ -23,9 +28,20 @@ afterAll(() => {
 const headers = {
   "content-type": "application/json",
   accept: "application/json, text/event-stream",
+  authorization: "Bearer test-secret",
 };
 
 describe("HTTP transport", () => {
+  it("rejects a request without the bearer token (401)", async () => {
+    const { authorization: _drop, ...noAuth } = headers;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: noAuth,
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list", params: {} }),
+    });
+    expect(res.status).toBe(401);
+  });
+
   it("rejects a session-less non-initialize POST with 400", async () => {
     const res = await fetch(url, {
       method: "POST",

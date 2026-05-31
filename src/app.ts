@@ -7,6 +7,7 @@ import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { loadConfig, type ServerConfig } from "./core/env.js";
 import { loginClient, createClient } from "./core/discordClient.js";
 import { buildServer } from "./server.js";
+import { loadHttpSecurity, httpSecurityMiddleware, type HttpSecurityConfig } from "./core/httpSecurity.js";
 
 /**
  * Build the Express app exposing the MCP server over the HTTP streamable
@@ -17,9 +18,13 @@ import { buildServer } from "./server.js";
  * Exported (rather than inlined in {@link main}) so the routing/session logic
  * can be integration-tested without a real Discord connection.
  */
-export function createHttpApp(client: Client, config: ServerConfig): Express {
+export function createHttpApp(client: Client, config: ServerConfig, security?: HttpSecurityConfig): Express {
   const app = express();
   app.use(express.json());
+
+  // Security (DNS-rebinding + bearer auth) runs before any MCP handling.
+  // Each check is a no-op until its env var is set, so local dev is unaffected.
+  app.use("/mcp", httpSecurityMiddleware(security ?? loadHttpSecurity()));
 
   const transports = new Map<string, StreamableHTTPServerTransport>();
 
@@ -83,8 +88,18 @@ async function main(): Promise<void> {
       })
     : createClient();
 
-  createHttpApp(client, config).listen(port, () => {
-    process.stderr.write(`[discord-mcp] HTTP server ready on http://localhost:${port}/mcp\n`);
+  const security = loadHttpSecurity();
+  const host = process.env.DISCORD_MCP_BIND || "127.0.0.1";
+
+  if (!security.authToken) {
+    process.stderr.write(
+      "[discord-mcp] WARNING: no DISCORD_MCP_AUTH_TOKEN set — the /mcp endpoint is UNAUTHENTICATED. " +
+        "Keep it bound to localhost behind a reverse proxy, or set a token before exposing it.\n",
+    );
+  }
+
+  createHttpApp(client, config, security).listen(port, host, () => {
+    process.stderr.write(`[discord-mcp] HTTP server ready on http://${host}:${port}/mcp\n`);
   });
 }
 
