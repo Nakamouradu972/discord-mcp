@@ -1,24 +1,31 @@
-FROM maven:3.9.6-amazoncorretto-17 AS build
-
+# --- Build stage -------------------------------------------------------------
+FROM node:22-alpine AS build
 WORKDIR /app
 
-COPY pom.xml .
+COPY package.json package-lock.json* ./
+RUN npm install
+
+COPY tsconfig.json ./
 COPY src ./src
+RUN npm run build
 
-RUN mvn clean package -DskipTests
+RUN npm prune --omit=dev
 
-FROM amazoncorretto:17-alpine
-
+# --- Runtime stage -----------------------------------------------------------
+FROM node:22-alpine AS runtime
 WORKDIR /app
+ENV NODE_ENV=production
 
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/build ./build
+COPY package.json ./
 
 ENV DISCORD_TOKEN=""
 ENV DISCORD_GUILD_ID=""
+ENV PORT=3000
+EXPOSE 3000
 
-EXPOSE 8085
-
-HEALTHCHECK --interval=30s --timeout=3s --start-period=20s --retries=3 \
-  CMD wget -q -O - http://127.0.0.1:8085/actuator/health | grep -q '"status":"UP"' || exit 1
-
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Default to the HTTP streamable transport for container/self-host scenarios.
+# For stdio, override the command with: node build/index.js
+ENTRYPOINT ["node", "build/app.js"]
+CMD ["--transport", "http", "--port", "3000"]
