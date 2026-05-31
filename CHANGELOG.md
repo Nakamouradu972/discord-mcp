@@ -4,6 +4,27 @@ All notable changes to this project are documented here. The project follows
 [Semantic Versioning](https://semver.org/): given a stack rewrite that is not
 backward-compatible, this release is a **major** bump.
 
+## [2.6.0] — 2026-05-31
+
+### Removed — autonomous runner / real-time event stack
+Reverted the v2.5.0 real-time work. This package is now purely an **administration**
+MCP (REST on demand) for driving Discord from Claude Desktop over HTTP; it no longer
+ships any building blocks for a reactive bot.
+
+- Removed the **gateway worker** (`src/gateway/`) that deferred interactions and
+  enqueued events.
+- Removed the **SQLite event queue** (`src/core/eventQueue.ts`) and the
+  `node:sqlite` ExperimentalWarning shim (`src/core/warnings.ts`).
+- Removed the **`realtime` tools** (`poll_events`, `respond_interaction`,
+  `complete_event`) and the `ToolContext.queue` plumbing.
+- Removed the related env vars (`DISCORD_MCP_EVENTS`, `DISCORD_MCP_QUEUE_FILE`,
+  `DISCORD_MCP_EVENTS_INTERACTIONS/MENTIONS/CHANNELS`) and `docs/REALTIME_DESIGN.md`.
+- `engines.node` relaxed back to **≥ 18** (the `node:sqlite` requirement is gone).
+
+The HTTP transport security from 2.4.0 (bearer auth, bind host, DNS-rebinding
+protection, secure compose) is **kept** — that is the admin-over-HTTP path.
+Tool count: **108 → 105** (31 read · 53 write · 21 destructive).
+
 ## [2.5.0] — 2026-05-31
 
 ### Added — real-time events & interactions (Option B, phases 2–3)

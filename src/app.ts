@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-import "./core/warnings.js";
 import express, { type Express, type Request, type Response } from "express";
 import { randomUUID } from "node:crypto";
 import type { Client } from "discord.js";
@@ -9,8 +8,6 @@ import { loadConfig, type ServerConfig } from "./core/env.js";
 import { loginClient, createClient } from "./core/discordClient.js";
 import { buildServer } from "./server.js";
 import { loadHttpSecurity, httpSecurityMiddleware, type HttpSecurityConfig } from "./core/httpSecurity.js";
-import type { EventQueue } from "./core/eventQueue.js";
-import { setupEvents } from "./gateway/setup.js";
 
 /**
  * Build the Express app exposing the MCP server over the HTTP streamable
@@ -25,7 +22,6 @@ export function createHttpApp(
   client: Client,
   config: ServerConfig,
   security?: HttpSecurityConfig,
-  queue?: EventQueue,
 ): Express {
   const app = express();
   app.use(express.json());
@@ -64,7 +60,7 @@ export function createHttpApp(
     transport.onclose = () => {
       if (transport.sessionId) transports.delete(transport.sessionId);
     };
-    const server = buildServer({ client, config, queue });
+    const server = buildServer({ client, config });
     await server.connect(transport);
     await transport.handleRequest(req, res, req.body);
   });
@@ -106,9 +102,7 @@ async function main(): Promise<void> {
     );
   }
 
-  const queue = setupEvents(client);
-
-  createHttpApp(client, config, security, queue).listen(port, host, () => {
+  createHttpApp(client, config, security).listen(port, host, () => {
     process.stderr.write(`[discord-mcp] HTTP server ready on http://${host}:${port}/mcp\n`);
   });
 }
