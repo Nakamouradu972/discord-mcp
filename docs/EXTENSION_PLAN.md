@@ -1,0 +1,53 @@
+# Extension Plan — Discord MCP (VekTrel Edition)
+
+Status of the effort to cover the full public Discord API behind a generic
+guardrails layer (dry-run, confirmation, audit, rate-limit, zod validation).
+
+**Legend:** ✅ done · 🚧 in progress · ⛔ not started
+
+| Domain | Status | Tools | Bot permissions | Gateway intents |
+|---|---|---|---|---|
+| Core guardrails | ✅ | dry-run, confirmation, audit log, rate-limit retry, zod validation | — | — |
+| base | ✅ | `login`, `list_servers`, `get_server_info`, `send` | Send Messages, View Channel | Guilds |
+| channels | ✅ | `create_text_channel`, `create_voice_channel`, `create_forum_channel`, `create_category`, `edit_channel`, `edit_category`, `delete_channel`, `delete_category`, `set_channel_permissions`, `remove_channel_permissions` | Manage Channels, Manage Roles | Guilds |
+| roles | ✅ | `list_roles`, `create_role`, `edit_role`, `delete_role`, `assign_role`, `remove_role` | Manage Roles | Guilds, GuildMembers |
+| messages | ✅ | `get_channel_messages`, `read_messages`, `get_message`, `search_messages`, `edit_message`, `delete_message`, `bulk_delete_messages`, `pin_message`, `unpin_message` | Send/Manage Messages, Read Message History | GuildMessages, MessageContent |
+| reactions | ✅ | `add_reaction`, `add_multiple_reactions`, `remove_reaction`, `get_reaction_users`, `clear_reactions` | Add Reactions, Manage Messages | GuildMessageReactions |
+| forum | ✅ | `get_forum_channels`, `create_forum_post`, `get_forum_post`, `list_forum_threads`, `reply_to_forum`, `get_forum_tags`, `set_forum_tags`, `update_forum_post`, `delete_forum_post` | Create Public Threads, Send Messages in Threads, Manage Threads/Channels | Guilds |
+| webhooks | ✅ | `create_webhook`, `send_webhook_message`, `edit_webhook`, `delete_webhook` | Manage Webhooks | Guilds |
+| members | ✅ | `list_members`, `get_member`, `edit_member` | Manage Nicknames, Mute/Deafen/Move Members, Moderate Members | GuildMembers, GuildVoiceStates |
+| moderation | ✅ | `ban`, `unban`, `kick`, `timeout`, `remove_timeout`, `list_bans`, `get_timeout_status` | Ban/Kick/Moderate Members | GuildModeration, GuildMembers |
+| guild | ✅ | `get_guild_settings`, `edit_guild_settings` | Manage Server | Guilds |
+| invites | ✅ | `create_invite`, `list_invites`, `delete_invite` | Create Instant Invite, Manage Server | Guilds |
+| events | ✅ | `create_scheduled_event`, `edit_scheduled_event`, `delete_scheduled_event`, `list_scheduled_events`, `get_event_users` | Manage Events | GuildScheduledEvents |
+| polls | ✅ | `create_poll`, `end_poll`, `get_poll_results` | Send/Manage Messages | Guilds |
+| emojis | ✅ | `create_emoji`, `delete_emoji`, `list_emojis`, `list_stickers` | Manage Emojis and Stickers | Guilds |
+| automod | ✅ | `create_automod_rule`, `edit_automod_rule`, `delete_automod_rule`, `list_automod_rules` | Manage Server | Guilds |
+| audit | ✅ | `get_audit_log` | View Audit Log | Guilds |
+| threads | ✅ | `create_thread`, `edit_thread`, `delete_thread`, `list_threads`, `add_thread_member`, `remove_thread_member` | Create Public Threads, Manage Threads | Guilds |
+| raw | ✅ | `discord_raw` (generic REST passthrough) | depends on the endpoint called | — |
+
+## Guardrail classification
+
+Each tool declares a guardrail **category** that drives the write-path behaviour:
+
+- **read** — no side effects; never gated.
+- **write** — mutates state; **dry-run by default**, executes only with `dryRun: false`.
+- **destructive** — irreversible / high impact; dry-run by default **and** requires `confirm: true`.
+
+Current distribution: **27 read · 42 write · 17 destructive** (86 tools total).
+
+Destructive tools include: every `delete_*`, `ban`, `kick`, `bulk_delete_messages`,
+`clear_reactions`, `remove_channel_permissions`, `delete_forum_post`,
+`delete_thread`, and `discord_raw`.
+
+## Notes & limitations
+
+- `search_messages` filters recently-fetched messages client-side (the Discord
+  guild search endpoint is not available to bots).
+- `edit_guild_settings` sets the vanity URL through the raw REST route; the
+  server must be at boost level 3 for it to succeed.
+- `send_webhook_message` works without a logged-in client (it uses the webhook
+  id+token or URL directly).
+- Privileged intents (`MessageContent`, `GuildMembers`) must be enabled in the
+  Discord Developer Portal in addition to being requested by the client.
