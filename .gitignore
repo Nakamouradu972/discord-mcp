@@ -9,10 +9,10 @@ dist/
 # Test / coverage
 coverage/
 
-# Logs & local audit trail
+# Logs & local audit trail (runtime output at repo root only)
 logs/
 *.log
-audit/
+/audit/
 audit-log.jsonl
 
 ### IntelliJ IDEA ###
