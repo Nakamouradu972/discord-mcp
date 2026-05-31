@@ -63,3 +63,24 @@ export function mockClientWithGuild(guild: unknown): Partial<Client> {
     },
   } as unknown as Partial<Client>;
 }
+
+/** Build a mock client whose `channels.fetch` resolves to `channel`. */
+export function mockClientWithChannel(channel: unknown): Partial<Client> {
+  return {
+    channels: {
+      fetch: vi.fn(async () => channel),
+    },
+  } as unknown as Partial<Client>;
+}
+
+/** Build a discord.js-like Collection from entries (Map plus `.map`/`.filter`). */
+export function collection<V>(entries: [string, V][]): Map<string, V> {
+  const map = new Map<string, V>(entries);
+  (map as any).map = (fn: (v: V, k: string) => unknown) =>
+    Array.from(map.entries()).map(([k, v]) => fn(v, k));
+  (map as any).filter = (fn: (v: V) => boolean) => {
+    const next = collection([...map.entries()].filter(([, v]) => fn(v)));
+    return next;
+  };
+  return map;
+}
