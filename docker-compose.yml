@@ -24,6 +24,10 @@ services:
       DISCORD_MCP_ACTOR: ${DISCORD_MCP_ACTOR:-claude-desktop}
       PORT: "3000"
       DISCORD_MCP_BIND: "0.0.0.0"
+      # Real-time gateway worker + event queue (opt-in). Only ONE process may
+      # own the gateway per bot token — keep this enabled on a single instance.
+      DISCORD_MCP_EVENTS: ${DISCORD_MCP_EVENTS:-}
+      DISCORD_MCP_QUEUE_FILE: /data/events.sqlite
 
 volumes:
   mcp-data:

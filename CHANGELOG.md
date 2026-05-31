@@ -4,6 +4,30 @@ All notable changes to this project are documented here. The project follows
 [Semantic Versioning](https://semver.org/): given a stack rewrite that is not
 backward-compatible, this release is a **major** bump.
 
+## [2.5.0] — 2026-05-31
+
+### Added — real-time events & interactions (Option B, phases 2–3)
+- **Gateway worker** (`src/gateway/`): opt-in via `DISCORD_MCP_EVENTS=true`. Keeps
+  a gateway connection that **defers interactions within Discord's 3 s deadline**
+  and **enqueues** events (interactions + bot mentions by default; configurable).
+- **SQLite event queue** (`src/core/eventQueue.ts`) using the built-in
+  `node:sqlite` (no external dependency) with at-least-once claim semantics and
+  interaction-token expiry. Persisted to `DISCORD_MCP_QUEUE_FILE`.
+- **`realtime` tools:** `poll_events` (claim pending events), `respond_interaction`
+  (reply to a deferred slash command / button via its eventId, supports
+  text/embeds/buttons/ephemeral) and `complete_event`. They error clearly when
+  the worker is disabled.
+- Both entrypoints wire the queue into the MCP tool context when events are on.
+- `node:sqlite`'s ExperimentalWarning is suppressed cleanly; the module is loaded
+  lazily so it never appears unless the queue is actually used.
+
+Requires **Node ≥ 22** (for `node:sqlite`); `engines` updated accordingly.
+Tool count: **105 → 108** (32 read · 55 write · 21 destructive).
+
+> This delivers phases 2–3 of `docs/REALTIME_DESIGN.md`. The autonomous runner
+> (phase 4, a separate service per the chosen B2 topology) is intentionally not
+> part of the MCP package.
+
 ## [2.4.0] — 2026-05-31
 
 ### Added — HTTP transport security (real-time Option B, phase 1)

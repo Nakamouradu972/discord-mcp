@@ -103,25 +103,45 @@ Guidance:
 **Rule of thumb:** prefer a typed tool when one exists (better validation and
 previews); fall back to `discord_raw` for everything else.
 
-## 6. What this server CANNOT do (architectural limits)
+## 6. Real-time events & interactions (when the gateway worker is enabled)
 
-This MCP is **request/response**. It does **not** consume the Discord gateway
-event stream, so:
+When the server runs with `DISCORD_MCP_EVENTS=true`, a gateway worker stays
+connected, **acknowledges interactions within Discord's 3 s deadline** (so they
+don't fail), and **enqueues** events. You then drive an **observe → decide →
+respond** loop with the `realtime` tools:
 
-- It cannot **react in real time** to new messages, member joins, reactions, or
-  button/command clicks. To observe activity, **poll** with `read_messages` /
-  `get_channel_messages`.
-- It cannot **respond to interactions** (slash commands, buttons, modals). You
-  can *register* slash commands (`register_application_command`) and *send*
-  buttons, but replying to a click/invocation requires a separate, always-on
-  interaction handler that this server does not provide.
-- It does not stream **voice audio**.
+1. **`poll_events`** — claim pending events (interactions, bot mentions, …). Each
+   returned interaction has an `eventId` and a reply deadline (~15 min).
+2. Decide. You may call any other tool (e.g. `get_channel_messages` to read
+   context, `assign_role`, `ban`, …).
+3. **`respond_interaction`** (for slash commands / button clicks) — reply using
+   the `eventId`, with `content` / `embeds` / `buttons`, optionally `ephemeral`.
+   For non-interaction events (mentions), reply with `send` and mark them handled
+   via **`complete_event`**.
 
-For one-shot administration (managing channels, roles, members, moderation,
-events, content, etc.) the coverage is effectively complete: typed tools for the
-common cases plus `discord_raw` for the long tail.
+```jsonc
+// 1) claim
+{ "name": "poll_events", "arguments": { "limit": 5 } }
+// → "- [interaction] eventId=ab12 user=… payload: {\"command\":\"ask\",…}"
 
-> A design to lift the real-time / interaction limitation (an always-on gateway
-> worker that defers interactions and enqueues events, plus `poll_events` /
-> `respond_interaction` tools) is specified in
-> [`REALTIME_DESIGN.md`](./REALTIME_DESIGN.md). Not yet implemented.
+// 2) answer the slash command
+{ "name": "respond_interaction", "arguments": { "eventId": "ab12", "content": "…", "dryRun": false } }
+```
+
+Notes & limits:
+- Replies are **not instant**: the worker acks in <3 s ("⏳ thinking…"), the real
+  answer lands when you process the queue (poll interval + model latency).
+- Reactive behaviour needs a process that **keeps polling** — typically a
+  separate autonomous runner (see [`REALTIME_DESIGN.md`](./REALTIME_DESIGN.md)).
+  Claude Desktop is the admin console, not the always-on brain.
+- Only **one** process may own the gateway per bot token; admin tools are REST
+  and run concurrently with it.
+- Still no **voice audio** streaming.
+
+If `DISCORD_MCP_EVENTS` is off, the `realtime` tools return a clear "queue not
+enabled" error, and you observe activity by **polling** `read_messages` /
+`get_channel_messages` instead.
+
+For one-shot administration (channels, roles, members, moderation, events,
+content, …) coverage is effectively complete: typed tools plus `discord_raw` for
+the long tail. Full architecture: [`REALTIME_DESIGN.md`](./REALTIME_DESIGN.md).
