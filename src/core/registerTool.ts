@@ -44,58 +44,58 @@ export function createGuardedHandler(
     const auditArgs = args as Record<string, unknown>;
 
     try {
-        if (isWrite) {
-          const dryRunActive = typeof dryRun === "boolean" ? dryRun : ctx.config.dryRunDefault;
-          const preview = def.plan ? await def.plan(args, ctx) : "(no preview available)";
+      if (isWrite) {
+        const dryRunActive = typeof dryRun === "boolean" ? dryRun : ctx.config.dryRunDefault;
+        const preview = def.plan ? await def.plan(args, ctx) : "(no preview available)";
 
-          if (dryRunActive) {
-            await ctx.audit.record({
-              tool: def.name,
-              category: def.category,
-              args: auditArgs,
-              outcome: "dry-run",
-              detail: preview,
-            });
-            const howTo = isDestructive
-              ? "Re-run with dryRun=false and confirm=true to execute."
-              : "Re-run with dryRun=false to execute.";
-            return textResult(`🧪 DRY-RUN — no action taken.\n\nPlanned change:\n${preview}\n\n${howTo}`);
-          }
-
-          if (isDestructive && confirm !== true) {
-            await ctx.audit.record({
-              tool: def.name,
-              category: def.category,
-              args: auditArgs,
-              outcome: "confirmation-required",
-              detail: preview,
-            });
-            return textResult(
-              `⚠️ CONFIRMATION REQUIRED — destructive action.\n\nPlanned change:\n${preview}\n\nRe-run with confirm=true (and dryRun=false) to proceed.`,
-            );
-          }
+        if (dryRunActive) {
+          await ctx.audit.record({
+            tool: def.name,
+            category: def.category,
+            args: auditArgs,
+            outcome: "dry-run",
+            detail: preview,
+          });
+          const howTo = isDestructive
+            ? "Re-run with dryRun=false and confirm=true to execute."
+            : "Re-run with dryRun=false to execute.";
+          return textResult(`🧪 DRY-RUN — no action taken.\n\nPlanned change:\n${preview}\n\n${howTo}`);
         }
 
-        const result = await withRateLimitRetry(() => Promise.resolve(def.execute(args, ctx)));
-        await ctx.audit.record({
-          tool: def.name,
-          category: def.category,
-          args: auditArgs,
-          outcome: "success",
-          detail: result,
-        });
-        return textResult(result);
-      } catch (error) {
-        const message = errorMessage(error);
-        await ctx.audit.record({
-          tool: def.name,
-          category: def.category,
-          args: auditArgs,
-          outcome: "error",
-          detail: message,
-        });
-        return textResult(`❌ ${message}`, true);
+        if (isDestructive && confirm !== true) {
+          await ctx.audit.record({
+            tool: def.name,
+            category: def.category,
+            args: auditArgs,
+            outcome: "confirmation-required",
+            detail: preview,
+          });
+          return textResult(
+            `⚠️ CONFIRMATION REQUIRED — destructive action.\n\nPlanned change:\n${preview}\n\nRe-run with confirm=true (and dryRun=false) to proceed.`,
+          );
+        }
       }
+
+      const result = await withRateLimitRetry(() => Promise.resolve(def.execute(args, ctx)));
+      await ctx.audit.record({
+        tool: def.name,
+        category: def.category,
+        args: auditArgs,
+        outcome: "success",
+        detail: result,
+      });
+      return textResult(result);
+    } catch (error) {
+      const message = errorMessage(error);
+      await ctx.audit.record({
+        tool: def.name,
+        category: def.category,
+        args: auditArgs,
+        outcome: "error",
+        detail: message,
+      });
+      return textResult(`❌ ${message}`, true);
+    }
   };
 }
 
