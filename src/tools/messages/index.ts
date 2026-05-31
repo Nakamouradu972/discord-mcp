@@ -178,6 +178,26 @@ const unpinMessage = defineTool({
   },
 });
 
+const replyToMessage = defineTool({
+  name: "reply_to_message",
+  description: "Send a message as a reply to an existing message.",
+  category: "write",
+  permissions: ["Send Messages", "Read Message History"],
+  intents: ["GuildMessages"],
+  inputSchema: {
+    channelId: z.string().describe("Channel id."),
+    messageId: z.string().describe("Id of the message to reply to."),
+    content: z.string().min(1).max(2000).describe("Reply content."),
+  },
+  plan: (a) => `Reply to message ${a.messageId} in channel ${a.channelId}: "${a.content}"`,
+  execute: async (a, ctx) => {
+    const channel = await resolveMessageChannel(ctx, a.channelId);
+    const message = await channel.messages.fetch(a.messageId);
+    const sent = await message.reply(a.content);
+    return `Replied to message ${a.messageId} (new message ${sent.id}).`;
+  },
+});
+
 /** Message tools (base + extension). */
 export const messageTools: AnyToolDefinition[] = [
   getChannelMessages,
@@ -185,6 +205,7 @@ export const messageTools: AnyToolDefinition[] = [
   getMessage,
   searchMessages,
   editMessage,
+  replyToMessage,
   deleteMessage,
   bulkDeleteMessages,
   pinMessage,
