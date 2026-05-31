@@ -1,9 +1,12 @@
 # Real-time Design — events & interactions (Option B)
 
-> **Status:** design only. No implementation yet. This document is the agreed
-> blueprint for adding real-time event handling and interaction replies on top
-> of the existing request/response MCP, for a **Dockerised remote deployment**
-> with **Claude Desktop connecting over HTTP**.
+> **Status (updated):** phases 1–3 **implemented** (security, gateway worker +
+> SQLite event queue, `poll_events` / `respond_interaction` / `complete_event`
+> tools), all **opt-in** via `DISCORD_MCP_EVENTS`. **Phase 4 (the autonomous
+> runner) is descoped** — the project is used as an **admin MCP for Claude
+> Desktop over HTTP**, not as a reactive bot, so no always-on runner is shipped.
+> The real-time machinery stays in the codebase, dormant unless enabled. For the
+> admin deployment, see [`DEPLOYMENT.md`](./DEPLOYMENT.md).
 
 ## 1. Problem recap
 

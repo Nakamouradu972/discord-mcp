@@ -110,6 +110,10 @@ docker build -t vektrel-discord-mcp .
 docker run -e DISCORD_TOKEN=... -p 3000:3000 vektrel-discord-mcp
 ```
 
+> **Deploying remotely and connecting Claude Desktop over HTTP?** See the
+> step-by-step [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) (TLS reverse proxy,
+> bearer auth, and the `mcp-remote` config).
+
 ---
 
 ## Configuration
