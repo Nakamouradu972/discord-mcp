@@ -26,11 +26,11 @@ This edition rewrites and extends the project to target **full coverage of the p
 
 ## Features
 
-89 tools across 18 domains, every write operation routed through the shared guardrail pipeline.
+95 tools across 19 domains, every write operation routed through the shared guardrail pipeline.
 
 | Domain | Capabilities |
 |---|---|
-| **Base** | Login status, list servers, server info, send message |
+| **Base** | Login status, list servers, server info, send message (text, embeds, files, buttons) |
 | **Channels & categories** | Create/edit/delete text, voice, forum, categories; permission overwrites |
 | **Roles** | List, create, edit, delete, assign, remove |
 | **Messages & reactions** | Send, read, search, edit, delete, bulk delete, pin, reactions |
@@ -42,13 +42,14 @@ This edition rewrites and extends the project to target **full coverage of the p
 | **Invites** | Create, list, delete |
 | **Scheduled events** | CRUD + subscriber listing |
 | **Polls** | Create, end, results |
-| **Emojis & stickers** | Create/delete/list emojis, list stickers |
-| **AutoMod** | Keyword rule CRUD |
+| **Emojis & stickers** | Emoji + sticker create/delete/list |
+| **AutoMod** | Rule CRUD (Keyword, Spam, KeywordPreset, MentionSpam; block/timeout/alert) |
 | **Audit log** | Query with user / action-type filters |
 | **Threads** | Create, edit, delete, list, membership |
+| **Slash commands** | Register, list, delete application commands |
 | **Raw API** | `discord_raw`: REST passthrough for any uncovered route |
 
-See [`docs/EXTENSION_PLAN.md`](docs/EXTENSION_PLAN.md) for per-domain status, tools, required permissions and intents.
+See [`docs/EXTENSION_PLAN.md`](docs/EXTENSION_PLAN.md) for per-domain status, tools, required permissions and intents, and [`docs/LLM_GUIDE.md`](docs/LLM_GUIDE.md) for how an assistant should drive the server (guardrail workflow, rich messages, and reaching any endpoint via `discord_raw`).
 
 ---
 
@@ -180,7 +181,7 @@ A tool's classification (`read` / `write` / `destructive`) is declared once and 
 
 > Prefix `discord_`. See [`docs/EXTENSION_PLAN.md`](docs/EXTENSION_PLAN.md) for permissions/intents per tool.
 
-- **Base:** `login`, `list_servers`, `get_server_info`, `send`
+- **Base:** `login`, `list_servers`, `get_server_info`, `send` (text/embeds/files/buttons), `send_embed`
 - **Channels:** `list_channels`, `get_channel_info`, `create_text_channel`, `create_voice_channel`, `create_forum_channel`, `create_category`, `edit_channel`, `edit_category`, `delete_channel`, `delete_category`, `set_channel_permissions`, `remove_channel_permissions`
 - **Roles:** `list_roles`, `create_role`, `edit_role`, `delete_role`, `assign_role`, `remove_role`
 - **Messages / reactions:** `get_channel_messages`, `read_messages`, `get_message`, `search_messages`, `edit_message`, `reply_to_message`, `delete_message`, `bulk_delete_messages`, `pin_message`, `unpin_message`, `add_reaction`, `add_multiple_reactions`, `remove_reaction`, `get_reaction_users`, `clear_reactions`
@@ -192,10 +193,11 @@ A tool's classification (`read` / `write` / `destructive`) is declared once and 
 - **Invites:** `create_invite`, `list_invites`, `delete_invite`
 - **Events:** `create_scheduled_event`, `edit_scheduled_event`, `delete_scheduled_event`, `list_scheduled_events`, `get_event_users`
 - **Polls:** `create_poll`, `end_poll`, `get_poll_results`
-- **Emojis / stickers:** `create_emoji`, `delete_emoji`, `list_emojis`, `list_stickers`
+- **Emojis / stickers:** `create_emoji`, `delete_emoji`, `list_emojis`, `list_stickers`, `create_sticker`, `delete_sticker`
 - **AutoMod:** `create_automod_rule`, `edit_automod_rule`, `delete_automod_rule`, `list_automod_rules`
 - **Audit:** `get_audit_log`
 - **Threads:** `create_thread`, `edit_thread`, `delete_thread`, `list_threads`, `add_thread_member`, `remove_thread_member`
+- **Slash commands:** `list_application_commands`, `register_application_command`, `delete_application_command`
 - **Raw:** `discord_raw`
 
 ---
@@ -217,7 +219,8 @@ src/
   tools/
     base/       channels/   roles/      messages/   reactions/  forum/
     webhooks/   members/    moderation/ guild/      invites/    events/
-    polls/      emojis/     automod/    audit/      threads/    raw/
+    polls/      emojis/     automod/    audit/      threads/    commands/
+    raw/
   index.ts     # stdio entrypoint
   app.ts       # HTTP streamable entrypoint
 ```
