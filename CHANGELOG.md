@@ -4,6 +4,29 @@ All notable changes to this project are documented here. The project follows
 [Semantic Versioning](https://semver.org/): given a stack rewrite that is not
 backward-compatible, this release is a **major** bump.
 
+## [2.2.0] — 2026-05-31
+
+### Added (backward-compatible)
+- **Rich messages:** `send` now accepts `embeds`, `files` (by URL) and `buttons`
+  (link buttons work standalone) in addition to text; new `send_embed`
+  convenience tool. Shared `buildMessagePayload` helper in `src/core/`.
+- **Slash commands** domain: `list_application_commands`,
+  `register_application_command`, `delete_application_command`.
+- **Stickers:** `create_sticker` and `delete_sticker`.
+- **AutoMod (complete):** `create_automod_rule` / `edit_automod_rule` now support
+  all trigger types (Keyword, Spam, KeywordPreset, MentionSpam) and
+  block / timeout / alert actions, plus role/channel exemptions.
+- **Docs:** new `docs/LLM_GUIDE.md` explaining the guardrail workflow, rich
+  messages, and how to reach any endpoint via `discord_raw`; documents the
+  request/response limits (no interaction/event handling).
+
+Tool count: **89 → 95** (31 read · 46 write · 18 destructive).
+
+### Note
+This MCP remains request/response: it cannot reply to slash-command invocations
+or button clicks (no gateway interaction handler). Registration and sending work;
+responding requires an external handler.
+
 ## [2.1.1] — 2026-05-31
 
 ### Fixed

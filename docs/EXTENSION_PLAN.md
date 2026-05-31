@@ -8,7 +8,7 @@ guardrails layer (dry-run, confirmation, audit, rate-limit, zod validation).
 | Domain | Status | Tools | Bot permissions | Gateway intents |
 |---|---|---|---|---|
 | Core guardrails | ✅ | dry-run, confirmation, audit log, rate-limit retry, zod validation | — | — |
-| base | ✅ | `login`, `list_servers`, `get_server_info`, `send` | Send Messages, View Channel | Guilds |
+| base | ✅ | `login`, `list_servers`, `get_server_info`, `send` (text/embeds/files/buttons), `send_embed` | Send Messages, View Channel | Guilds |
 | channels | ✅ | `list_channels`, `get_channel_info`, `create_text_channel`, `create_voice_channel`, `create_forum_channel`, `create_category`, `edit_channel`, `edit_category`, `delete_channel`, `delete_category`, `set_channel_permissions`, `remove_channel_permissions` | Manage Channels, Manage Roles, View Channel | Guilds |
 | roles | ✅ | `list_roles`, `create_role`, `edit_role`, `delete_role`, `assign_role`, `remove_role` | Manage Roles | Guilds, GuildMembers |
 | messages | ✅ | `get_channel_messages`, `read_messages`, `get_message`, `search_messages`, `edit_message`, `reply_to_message`, `delete_message`, `bulk_delete_messages`, `pin_message`, `unpin_message` | Send/Manage Messages, Read Message History | GuildMessages, MessageContent |
@@ -21,10 +21,11 @@ guardrails layer (dry-run, confirmation, audit, rate-limit, zod validation).
 | invites | ✅ | `create_invite`, `list_invites`, `delete_invite` | Create Instant Invite, Manage Server | Guilds |
 | events | ✅ | `create_scheduled_event`, `edit_scheduled_event`, `delete_scheduled_event`, `list_scheduled_events`, `get_event_users` | Manage Events | GuildScheduledEvents |
 | polls | ✅ | `create_poll`, `end_poll`, `get_poll_results` | Send/Manage Messages | Guilds |
-| emojis | ✅ | `create_emoji`, `delete_emoji`, `list_emojis`, `list_stickers` | Manage Emojis and Stickers | Guilds |
-| automod | ✅ | `create_automod_rule`, `edit_automod_rule`, `delete_automod_rule`, `list_automod_rules` | Manage Server | Guilds |
+| emojis | ✅ | `create_emoji`, `delete_emoji`, `list_emojis`, `list_stickers`, `create_sticker`, `delete_sticker` | Manage Emojis and Stickers | Guilds |
+| automod | ✅ | `create_automod_rule`, `edit_automod_rule`, `delete_automod_rule`, `list_automod_rules` (Keyword/Spam/KeywordPreset/MentionSpam triggers; block/timeout/alert actions) | Manage Server | Guilds |
 | audit | ✅ | `get_audit_log` | View Audit Log | Guilds |
 | threads | ✅ | `create_thread`, `edit_thread`, `delete_thread`, `list_threads`, `add_thread_member`, `remove_thread_member` | Create Public Threads, Manage Threads | Guilds |
+| commands | ✅ | `list_application_commands`, `register_application_command`, `delete_application_command` | — (bot owner / application scope) | Guilds |
 | raw | ✅ | `discord_raw` (generic REST passthrough) | depends on the endpoint called | — |
 
 ## Guardrail classification
@@ -35,7 +36,7 @@ Each tool declares a guardrail **category** that drives the write-path behaviour
 - **write** — mutates state; **dry-run by default**, executes only with `dryRun: false`.
 - **destructive** — irreversible / high impact; dry-run by default **and** requires `confirm: true`.
 
-Current distribution: **29 read · 43 write · 17 destructive** (89 tools total).
+Current distribution: **31 read · 46 write · 18 destructive** (95 tools total).
 
 Destructive tools include: every `delete_*`, `ban`, `kick`, `bulk_delete_messages`,
 `clear_reactions`, `remove_channel_permissions`, `delete_forum_post`,
@@ -51,3 +52,9 @@ Destructive tools include: every `delete_*`, `ban`, `kick`, `bulk_delete_message
   id+token or URL directly).
 - Privileged intents (`MessageContent`, `GuildMembers`) must be enabled in the
   Discord Developer Portal in addition to being requested by the client.
+- **Interactions are not handled.** Slash commands can be registered and buttons
+  can be sent, but the server does not consume gateway events, so it cannot
+  reply to a command invocation or a button click. Link buttons work standalone.
+  See [`LLM_GUIDE.md`](./LLM_GUIDE.md) §6.
+- Anything without a typed tool is reachable via `discord_raw`. See
+  [`LLM_GUIDE.md`](./LLM_GUIDE.md) §5.

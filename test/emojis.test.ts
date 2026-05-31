@@ -29,4 +29,24 @@ describe("emoji tools", () => {
     await getTool(emojiTools, "delete_emoji").execute({ emojiId: "e1" }, ctx);
     expect(del).toHaveBeenCalled();
   });
+
+  it("creates a sticker from a URL with tags", async () => {
+    const create = vi.fn(async () => ({ name: "wave", id: "s1" }));
+    const guild = mockGuild({ stickers: { create } });
+    const ctx = makeCtx(mockClientWithGuild(guild));
+    await getTool(emojiTools, "create_sticker").execute(
+      { name: "wave", imageUrl: "https://x/s.png", tags: "👋" },
+      ctx,
+    );
+    expect(create.mock.calls[0][0]).toMatchObject({ file: "https://x/s.png", name: "wave", tags: "👋" });
+  });
+
+  it("deletes a sticker (destructive)", async () => {
+    const del = vi.fn(async () => ({}));
+    const guild = mockGuild({ stickers: { fetch: vi.fn(async () => ({ delete: del })) } });
+    const ctx = makeCtx(mockClientWithGuild(guild));
+    await getTool(emojiTools, "delete_sticker").execute({ stickerId: "s1" }, ctx);
+    expect(del).toHaveBeenCalled();
+    expect(getTool(emojiTools, "delete_sticker").category).toBe("destructive");
+  });
 });

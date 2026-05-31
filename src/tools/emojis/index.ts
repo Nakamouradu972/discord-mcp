@@ -76,5 +76,60 @@ const listStickers = defineTool({
   },
 });
 
+const createSticker = defineTool({
+  name: "create_sticker",
+  description: "Create a custom sticker from an image URL (PNG/APNG/Lottie, <512KB).",
+  category: "write",
+  permissions: ["Manage Emojis and Stickers"],
+  intents: ["Guilds"],
+  inputSchema: {
+    guildId: z.string().optional().describe("Target server id (defaults to DISCORD_GUILD_ID)."),
+    name: z.string().min(2).max(30).describe("Sticker name."),
+    imageUrl: z.string().url().describe("Sticker image URL."),
+    tags: z.string().min(1).max(200).describe("Autocomplete/suggestion tags (e.g. a related unicode emoji)."),
+    description: z.string().max(100).optional().describe("Sticker description."),
+    reason: z.string().optional().describe("Audit-log reason."),
+  },
+  plan: (a) => `Create sticker "${a.name}" from ${a.imageUrl}.`,
+  execute: async (a, ctx) => {
+    const guild = await resolveGuild(ctx, a.guildId);
+    const sticker = await guild.stickers.create({
+      file: a.imageUrl,
+      name: a.name,
+      tags: a.tags,
+      description: a.description,
+      reason: a.reason,
+    });
+    return `Created sticker "${sticker.name}" (${sticker.id}).`;
+  },
+});
+
+const deleteSticker = defineTool({
+  name: "delete_sticker",
+  description: "Delete a custom sticker by id.",
+  category: "destructive",
+  permissions: ["Manage Emojis and Stickers"],
+  intents: ["Guilds"],
+  inputSchema: {
+    guildId: z.string().optional().describe("Target server id (defaults to DISCORD_GUILD_ID)."),
+    stickerId: z.string().describe("Id of the sticker to delete."),
+    reason: z.string().optional().describe("Audit-log reason."),
+  },
+  plan: (a) => `Delete sticker ${a.stickerId}.`,
+  execute: async (a, ctx) => {
+    const guild = await resolveGuild(ctx, a.guildId);
+    const sticker = await guild.stickers.fetch(a.stickerId);
+    await sticker.delete(a.reason);
+    return `Deleted sticker ${a.stickerId}.`;
+  },
+});
+
 /** Emoji & sticker tools. */
-export const emojiTools: AnyToolDefinition[] = [createEmoji, deleteEmoji, listEmojis, listStickers];
+export const emojiTools: AnyToolDefinition[] = [
+  createEmoji,
+  deleteEmoji,
+  listEmojis,
+  listStickers,
+  createSticker,
+  deleteSticker,
+];
