@@ -8,14 +8,14 @@ guardrails layer (dry-run, confirmation, audit, rate-limit, zod validation).
 | Domain | Status | Tools | Bot permissions | Gateway intents |
 |---|---|---|---|---|
 | Core guardrails | ✅ | dry-run, confirmation, audit log, rate-limit retry, zod validation | — | — |
-| base | ✅ | `login`, `list_servers`, `get_server_info`, `send` (text/embeds/files/buttons), `send_embed` | Send Messages, View Channel | Guilds |
-| channels | ✅ | `list_channels`, `get_channel_info`, `create_text_channel`, `create_voice_channel`, `create_forum_channel`, `create_category`, `edit_channel`, `edit_category`, `delete_channel`, `delete_category`, `set_channel_permissions`, `remove_channel_permissions` | Manage Channels, Manage Roles, View Channel | Guilds |
-| roles | ✅ | `list_roles`, `create_role`, `edit_role`, `delete_role`, `assign_role`, `remove_role` | Manage Roles | Guilds, GuildMembers |
+| base | ✅ | `login`, `list_servers`, `get_server_info`, `send` (text/embeds/files/buttons), `send_embed`, `set_presence` | Send Messages, View Channel | Guilds |
+| channels | ✅ | `list_channels`, `get_channel_info`, `create_text_channel`, `create_voice_channel`, `create_forum_channel`, `create_category`, `edit_channel`, `edit_category`, `delete_channel`, `delete_category`, `set_channel_position`, `set_channel_permissions`, `remove_channel_permissions` | Manage Channels, Manage Roles, View Channel | Guilds |
+| roles | ✅ | `list_roles`, `create_role`, `edit_role`, `delete_role`, `assign_role`, `remove_role`, `set_role_position` | Manage Roles | Guilds, GuildMembers |
 | messages | ✅ | `get_channel_messages`, `read_messages`, `get_message`, `search_messages`, `edit_message`, `reply_to_message`, `delete_message`, `bulk_delete_messages`, `pin_message`, `unpin_message` | Send/Manage Messages, Read Message History | GuildMessages, MessageContent |
 | reactions | ✅ | `add_reaction`, `add_multiple_reactions`, `remove_reaction`, `get_reaction_users`, `clear_reactions` | Add Reactions, Manage Messages | GuildMessageReactions |
 | forum | ✅ | `get_forum_channels`, `create_forum_post`, `get_forum_post`, `list_forum_threads`, `reply_to_forum`, `get_forum_tags`, `set_forum_tags`, `update_forum_post`, `delete_forum_post` | Create Public Threads, Send Messages in Threads, Manage Threads/Channels | Guilds |
 | webhooks | ✅ | `create_webhook`, `send_webhook_message`, `edit_webhook`, `delete_webhook` | Manage Webhooks | Guilds |
-| members | ✅ | `list_members`, `get_member`, `edit_member` | Manage Nicknames, Mute/Deafen/Move Members, Moderate Members | GuildMembers, GuildVoiceStates |
+| members | ✅ | `list_members`, `get_member`, `edit_member`, `send_dm`, `prune_members`, `get_prune_count` | Manage Nicknames, Mute/Deafen/Move/Kick Members, Moderate Members | GuildMembers, GuildVoiceStates |
 | moderation | ✅ | `ban`, `unban`, `kick`, `timeout`, `remove_timeout`, `list_bans`, `get_timeout_status` | Ban/Kick/Moderate Members | GuildModeration, GuildMembers |
 | guild | ✅ | `get_guild_settings`, `edit_guild_settings` | Manage Server | Guilds |
 | invites | ✅ | `create_invite`, `list_invites`, `delete_invite` | Create Instant Invite, Manage Server | Guilds |
@@ -26,6 +26,7 @@ guardrails layer (dry-run, confirmation, audit, rate-limit, zod validation).
 | audit | ✅ | `get_audit_log` | View Audit Log | Guilds |
 | threads | ✅ | `create_thread`, `edit_thread`, `delete_thread`, `list_threads`, `add_thread_member`, `remove_thread_member` | Create Public Threads, Manage Threads | Guilds |
 | commands | ✅ | `list_application_commands`, `register_application_command`, `delete_application_command` | — (bot owner / application scope) | Guilds |
+| voice | ✅ | `start_stage_instance`, `edit_stage_instance`, `stop_stage_instance`, `disconnect_member` | Manage Channels, Mute/Move Members | Guilds, GuildVoiceStates |
 | raw | ✅ | `discord_raw` (generic REST passthrough) | depends on the endpoint called | — |
 
 ## Guardrail classification
@@ -36,7 +37,7 @@ Each tool declares a guardrail **category** that drives the write-path behaviour
 - **write** — mutates state; **dry-run by default**, executes only with `dryRun: false`.
 - **destructive** — irreversible / high impact; dry-run by default **and** requires `confirm: true`.
 
-Current distribution: **31 read · 46 write · 18 destructive** (95 tools total).
+Current distribution: **31 read · 53 write · 21 destructive** (105 tools total).
 
 Destructive tools include: every `delete_*`, `ban`, `kick`, `bulk_delete_messages`,
 `clear_reactions`, `remove_channel_permissions`, `delete_forum_post`,

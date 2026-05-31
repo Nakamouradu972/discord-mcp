@@ -26,18 +26,19 @@ This edition rewrites and extends the project to target **full coverage of the p
 
 ## Features
 
-95 tools across 19 domains, every write operation routed through the shared guardrail pipeline.
+105 tools across 20 domains, every write operation routed through the shared guardrail pipeline.
 
 | Domain | Capabilities |
 |---|---|
-| **Base** | Login status, list servers, server info, send message (text, embeds, files, buttons) |
-| **Channels & categories** | Create/edit/delete text, voice, forum, categories; permission overwrites |
-| **Roles** | List, create, edit, delete, assign, remove |
+| **Base** | Login status, list servers, server info, send message (text, embeds, files, buttons), bot presence |
+| **Channels & categories** | Create/edit/delete/reposition text, voice, forum, categories; permission overwrites |
+| **Roles** | List, create, edit, delete, assign, remove, reposition |
 | **Messages & reactions** | Send, read, search, edit, delete, bulk delete, pin, reactions |
 | **Forum** | Posts, replies, tags, post management |
 | **Webhooks** | Create, send, edit, delete |
-| **Members** | List, details, edit (nickname, mute, deafen, voice move, timeout) |
+| **Members** | List, details, edit (nickname, mute, deafen, voice move, timeout), DM, prune |
 | **Moderation** | Ban, unban, kick, timeout, list bans, timeout status |
+| **Voice & stage** | Start/edit/stop stage instances, disconnect member from voice |
 | **Guild** | Read / edit server settings |
 | **Invites** | Create, list, delete |
 | **Scheduled events** | CRUD + subscriber listing |
@@ -181,13 +182,13 @@ A tool's classification (`read` / `write` / `destructive`) is declared once and 
 
 > Prefix `discord_`. See [`docs/EXTENSION_PLAN.md`](docs/EXTENSION_PLAN.md) for permissions/intents per tool.
 
-- **Base:** `login`, `list_servers`, `get_server_info`, `send` (text/embeds/files/buttons), `send_embed`
-- **Channels:** `list_channels`, `get_channel_info`, `create_text_channel`, `create_voice_channel`, `create_forum_channel`, `create_category`, `edit_channel`, `edit_category`, `delete_channel`, `delete_category`, `set_channel_permissions`, `remove_channel_permissions`
-- **Roles:** `list_roles`, `create_role`, `edit_role`, `delete_role`, `assign_role`, `remove_role`
+- **Base:** `login`, `list_servers`, `get_server_info`, `send` (text/embeds/files/buttons), `send_embed`, `set_presence`
+- **Channels:** `list_channels`, `get_channel_info`, `create_text_channel`, `create_voice_channel`, `create_forum_channel`, `create_category`, `edit_channel`, `edit_category`, `delete_channel`, `delete_category`, `set_channel_position`, `set_channel_permissions`, `remove_channel_permissions`
+- **Roles:** `list_roles`, `create_role`, `edit_role`, `delete_role`, `assign_role`, `remove_role`, `set_role_position`
 - **Messages / reactions:** `get_channel_messages`, `read_messages`, `get_message`, `search_messages`, `edit_message`, `reply_to_message`, `delete_message`, `bulk_delete_messages`, `pin_message`, `unpin_message`, `add_reaction`, `add_multiple_reactions`, `remove_reaction`, `get_reaction_users`, `clear_reactions`
 - **Forum:** `get_forum_channels`, `create_forum_post`, `get_forum_post`, `list_forum_threads`, `reply_to_forum`, `get_forum_tags`, `set_forum_tags`, `update_forum_post`, `delete_forum_post`
 - **Webhooks:** `create_webhook`, `send_webhook_message`, `edit_webhook`, `delete_webhook`
-- **Members:** `list_members`, `get_member`, `edit_member`
+- **Members:** `list_members`, `get_member`, `edit_member`, `send_dm`, `prune_members`, `get_prune_count`
 - **Moderation:** `ban`, `unban`, `kick`, `timeout`, `remove_timeout`, `list_bans`, `get_timeout_status`
 - **Guild:** `get_guild_settings`, `edit_guild_settings`
 - **Invites:** `create_invite`, `list_invites`, `delete_invite`
@@ -198,6 +199,7 @@ A tool's classification (`read` / `write` / `destructive`) is declared once and 
 - **Audit:** `get_audit_log`
 - **Threads:** `create_thread`, `edit_thread`, `delete_thread`, `list_threads`, `add_thread_member`, `remove_thread_member`
 - **Slash commands:** `list_application_commands`, `register_application_command`, `delete_application_command`
+- **Voice & stage:** `start_stage_instance`, `edit_stage_instance`, `stop_stage_instance`, `disconnect_member`
 - **Raw:** `discord_raw`
 
 ---
@@ -220,7 +222,7 @@ src/
     base/       channels/   roles/      messages/   reactions/  forum/
     webhooks/   members/    moderation/ guild/      invites/    events/
     polls/      emojis/     automod/    audit/      threads/    commands/
-    raw/
+    voice/      raw/
   index.ts     # stdio entrypoint
   app.ts       # HTTP streamable entrypoint
 ```

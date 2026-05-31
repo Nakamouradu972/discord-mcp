@@ -4,6 +4,21 @@ All notable changes to this project are documented here. The project follows
 [Semantic Versioning](https://semver.org/): given a stack rewrite that is not
 backward-compatible, this release is a **major** bump.
 
+## [2.3.0] — 2026-05-31
+
+### Added (backward-compatible)
+- **Members:** `send_dm` (direct message a user), `prune_members` (destructive)
+  and `get_prune_count` (dry estimate).
+- **Base:** `set_presence` — set the bot's online status and activity
+  (Playing/Streaming/Listening/Watching/Competing).
+- **Channels / roles:** `set_channel_position` and `set_role_position` for
+  reordering the channel list and role hierarchy.
+- **New `voice` domain:** `start_stage_instance`, `edit_stage_instance`,
+  `stop_stage_instance` and `disconnect_member`.
+- Docs (README, EXTENSION_PLAN, LLM_GUIDE) updated to cover the new tools.
+
+Tool count: **95 → 105** (31 read · 53 write · 21 destructive).
+
 ## [2.2.0] — 2026-05-31
 
 ### Added (backward-compatible)

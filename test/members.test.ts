@@ -36,4 +36,34 @@ describe("member tools", () => {
     await getTool(memberTools, "edit_member").execute({ userId: "1", timeoutMinutes: 0 }, ctx);
     expect(edit.mock.calls[0][0].communicationDisabledUntil).toBeNull();
   });
+
+  it("sends a direct message via the user's DM channel", async () => {
+    const send = vi.fn(async () => ({ id: "dm1" }));
+    const createDM = vi.fn(async () => ({ send }));
+    const user = { tag: "a#1", createDM };
+    const ctx = makeCtx({ users: { fetch: vi.fn(async () => user) } } as any);
+    const result = await getTool(memberTools, "send_dm").execute({ userId: "1", message: "hi" }, ctx);
+    expect(send).toHaveBeenCalledWith("hi");
+    expect(result).toContain("dm1");
+  });
+
+  it("prunes members (destructive) and reports the count", async () => {
+    const prune = vi.fn(async () => 7);
+    const guild = mockGuild({ members: { prune } });
+    const ctx = makeCtx(mockClientWithGuild(guild));
+    const result = await getTool(memberTools, "prune_members").execute({ days: 30 }, ctx);
+    expect(prune).toHaveBeenCalledWith({ days: 30, reason: undefined });
+    expect(result).toContain("7 member(s)");
+    expect(getTool(memberTools, "prune_members").category).toBe("destructive");
+  });
+
+  it("estimates prune count with a dry run", async () => {
+    const prune = vi.fn(async () => 4);
+    const guild = mockGuild({ members: { prune } });
+    const ctx = makeCtx(mockClientWithGuild(guild));
+    const result = await getTool(memberTools, "get_prune_count").execute({ days: 14 }, ctx);
+    expect(prune).toHaveBeenCalledWith({ days: 14, dry: true });
+    expect(result).toContain("4 member(s)");
+    expect(getTool(memberTools, "get_prune_count").category).toBe("read");
+  });
 });

@@ -31,4 +31,13 @@ describe("role tools", () => {
   it("delete_role is destructive", () => {
     expect(getTool(roleTools, "delete_role").category).toBe("destructive");
   });
+
+  it("repositions a role", async () => {
+    const setPosition = vi.fn(async () => ({}));
+    const role = { name: "Mod", setPosition };
+    const guild = mockGuild({ roles: { fetch: vi.fn(async () => role) } });
+    const ctx = makeCtx(mockClientWithGuild(guild));
+    await getTool(roleTools, "set_role_position").execute({ roleId: "r1", position: 3 }, ctx);
+    expect(setPosition).toHaveBeenCalledWith(3);
+  });
 });

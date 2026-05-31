@@ -83,5 +83,67 @@ const editMember = defineTool({
   },
 });
 
+const sendDirectMessage = defineTool({
+  name: "send_dm",
+  description: "Send a direct (private) message to a user.",
+  category: "write",
+  permissions: [],
+  intents: ["GuildMembers"],
+  inputSchema: {
+    userId: z.string().describe("Id of the user to DM."),
+    message: z.string().min(1).max(2000).describe("Message content (max 2000 chars)."),
+  },
+  plan: (a) => `DM user ${a.userId}: "${a.message}"`,
+  execute: async (a, ctx) => {
+    const user = await ctx.client.users.fetch(a.userId);
+    const dm = await user.createDM();
+    const sent = await dm.send(a.message);
+    return `Sent DM ${sent.id} to ${user.tag}.`;
+  },
+});
+
+const pruneMembers = defineTool({
+  name: "prune_members",
+  description: "Prune (kick) members inactive for N days who have no roles. High-impact, irreversible.",
+  category: "destructive",
+  permissions: ["Kick Members", "Manage Server"],
+  intents: ["GuildMembers"],
+  inputSchema: {
+    guildId: z.string().optional().describe("Target server id (defaults to DISCORD_GUILD_ID)."),
+    days: z.number().int().min(1).max(30).describe("Inactivity threshold in days (1–30)."),
+    reason: z.string().optional().describe("Audit-log reason."),
+  },
+  plan: (a) => `Prune members inactive for ${a.days} day(s) in guild ${a.guildId ?? "(default)"}.`,
+  execute: async (a, ctx) => {
+    const guild = await resolveGuild(ctx, a.guildId);
+    const pruned = await guild.members.prune({ days: a.days, reason: a.reason });
+    return `Pruned ${pruned ?? 0} member(s) inactive for ${a.days} day(s).`;
+  },
+});
+
+const getPruneCount = defineTool({
+  name: "get_prune_count",
+  description: "Estimate how many members would be removed by a prune of N days, without pruning.",
+  category: "read",
+  permissions: ["Kick Members", "Manage Server"],
+  intents: ["GuildMembers"],
+  inputSchema: {
+    guildId: z.string().optional().describe("Target server id (defaults to DISCORD_GUILD_ID)."),
+    days: z.number().int().min(1).max(30).describe("Inactivity threshold in days (1–30)."),
+  },
+  execute: async (a, ctx) => {
+    const guild = await resolveGuild(ctx, a.guildId);
+    const count = await guild.members.prune({ days: a.days, dry: true });
+    return `${count ?? 0} member(s) would be pruned for ${a.days} day(s) of inactivity.`;
+  },
+});
+
 /** Member tools (extension). */
-export const memberTools: AnyToolDefinition[] = [listMembers, getMember, editMember];
+export const memberTools: AnyToolDefinition[] = [
+  listMembers,
+  getMember,
+  editMember,
+  sendDirectMessage,
+  pruneMembers,
+  getPruneCount,
+];

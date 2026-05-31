@@ -141,6 +141,27 @@ const removeRole = defineTool({
   },
 });
 
+const setRolePosition = defineTool({
+  name: "set_role_position",
+  description: "Move a role to a new position in the hierarchy (higher position = more authority).",
+  category: "write",
+  permissions: ["Manage Roles"],
+  intents: ["Guilds"],
+  inputSchema: {
+    guildId: z.string().optional().describe("Target server id (defaults to DISCORD_GUILD_ID)."),
+    roleId: z.string().describe("Role id."),
+    position: z.number().int().min(0).describe("New position (0 = lowest, just above @everyone)."),
+  },
+  plan: (a) => `Move role ${a.roleId} to position ${a.position}.`,
+  execute: async (a, ctx) => {
+    const guild = await resolveGuild(ctx, a.guildId);
+    const role = await guild.roles.fetch(a.roleId);
+    if (!role) throw new Error(`Role ${a.roleId} not found.`);
+    await role.setPosition(a.position);
+    return `Moved role ${role.name} to position ${a.position}.`;
+  },
+});
+
 /** Role tools. */
 export const roleTools: AnyToolDefinition[] = [
   listRoles,
@@ -149,4 +170,5 @@ export const roleTools: AnyToolDefinition[] = [
   deleteRole,
   assignRole,
   removeRole,
+  setRolePosition,
 ];
