@@ -4,6 +4,19 @@ All notable changes to this project are documented here. The project follows
 [Semantic Versioning](https://semver.org/): given a stack rewrite that is not
 backward-compatible, this release is a **major** bump.
 
+## [2.1.1] — 2026-05-31
+
+### Fixed
+- **HTTP transport:** a session is now opened **only** for an `initialize`
+  request. Session-less non-initialize POSTs (and GET/DELETE without a known
+  session) are rejected with `400` instead of silently spinning up an orphan
+  MCP server per request.
+
+### Internal
+- `app.ts` refactored to export a testable `createHttpApp(client, config)`
+  factory; added integration tests for the HTTP session routing (the entrypoint
+  was previously untested).
+
 ## [2.1.0] — 2026-05-31
 
 ### Added (backward-compatible)
