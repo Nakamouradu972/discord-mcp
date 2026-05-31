@@ -35,4 +35,34 @@ describe("base tools", () => {
     expect(getTool(baseTools, "send").category).toBe("write");
     expect(getTool(baseTools, "list_servers").category).toBe("read");
   });
+
+  it("sends a rich message with an embed and a link button", async () => {
+    const send = vi.fn(async () => ({ id: "m1" }));
+    const channel = { isTextBased: () => true, send };
+    const ctx = makeCtx(mockClientWithChannel(channel));
+    await getTool(baseTools, "send").execute(
+      { channelId: "c1", embeds: [{ title: "Hi" }], buttons: [{ label: "Go", url: "https://x" }] },
+      ctx,
+    );
+    const payload = send.mock.calls[0][0];
+    expect(payload.embeds[0].title).toBe("Hi");
+    expect(payload.components[0].components[0].url).toBe("https://x");
+  });
+
+  it("rejects an empty send (no content/embeds/files)", async () => {
+    const channel = { isTextBased: () => true, send: vi.fn() };
+    const ctx = makeCtx(mockClientWithChannel(channel));
+    await expect(getTool(baseTools, "send").execute({ channelId: "c1" }, ctx)).rejects.toThrow(/at least one/);
+  });
+
+  it("send_embed wraps a single embed with optional content", async () => {
+    const send = vi.fn(async () => ({ id: "m2" }));
+    const channel = { isTextBased: () => true, send };
+    const ctx = makeCtx(mockClientWithChannel(channel));
+    await getTool(baseTools, "send_embed").execute({ channelId: "c1", content: "see:", title: "Report", description: "d" }, ctx);
+    const payload = send.mock.calls[0][0];
+    expect(payload.content).toBe("see:");
+    expect(payload.embeds[0].title).toBe("Report");
+    expect(payload.embeds[0].description).toBe("d");
+  });
 });

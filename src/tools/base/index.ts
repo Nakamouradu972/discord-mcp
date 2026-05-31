@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { defineTool, type AnyToolDefinition } from "../../core/types.js";
+import { buildMessagePayload, embedSchema, buttonSchema } from "../../core/messagePayload.js";
 import { resolveGuild } from "../../core/resolve.js";
 
 const login = defineTool({
@@ -55,24 +56,65 @@ const getServerInfo = defineTool({
 
 const send = defineTool({
   name: "send",
-  description: "Send a text message to a channel.",
+  description:
+    "Send a message to a channel. Supports plain text, rich embeds, file attachments (by URL) and link buttons.",
   category: "write",
   permissions: ["Send Messages", "View Channel"],
   intents: ["Guilds"],
   inputSchema: {
     channelId: z.string().describe("Target channel id."),
-    message: z.string().min(1).max(2000).describe("Message content (max 2000 chars)."),
+    message: z.string().max(2000).optional().describe("Text content (max 2000 chars)."),
+    embeds: z.array(embedSchema).max(10).optional().describe("Up to 10 rich embeds."),
+    files: z.array(z.string().url()).max(10).optional().describe("Attachment URLs to upload."),
+    buttons: z
+      .array(buttonSchema)
+      .max(25)
+      .optional()
+      .describe("Buttons (link buttons work standalone; others need an external interaction handler)."),
   },
-  plan: (a) => `Send to channel ${a.channelId}: "${a.message}"`,
+  plan: (a) => {
+    const parts = [
+      a.message ? `text "${a.message}"` : null,
+      a.embeds?.length ? `${a.embeds.length} embed(s)` : null,
+      a.files?.length ? `${a.files.length} file(s)` : null,
+      a.buttons?.length ? `${a.buttons.length} button(s)` : null,
+    ].filter(Boolean);
+    return `Send to channel ${a.channelId}: ${parts.join(", ") || "(empty)"}`;
+  },
   execute: async (a, ctx) => {
     const channel = await ctx.client.channels.fetch(a.channelId);
     if (!channel || !channel.isTextBased() || !("send" in channel)) {
       throw new Error(`Channel ${a.channelId} is not a text channel that can receive messages.`);
     }
-    const sent = await channel.send(a.message);
+    const payload = buildMessagePayload({ content: a.message, embeds: a.embeds, files: a.files, buttons: a.buttons });
+    const sent = await channel.send(payload);
     return `Sent message ${sent.id} to channel ${a.channelId}.`;
   },
 });
 
+const sendEmbed = defineTool({
+  name: "send_embed",
+  description: "Send a single rich embed to a channel (convenience wrapper over send).",
+  category: "write",
+  permissions: ["Send Messages", "View Channel"],
+  intents: ["Guilds"],
+  inputSchema: {
+    channelId: z.string().describe("Target channel id."),
+    content: z.string().max(2000).optional().describe("Optional text shown above the embed."),
+    ...embedSchema.shape,
+  },
+  plan: (a) => `Send embed "${a.title ?? "(untitled)"}" to channel ${a.channelId}.`,
+  execute: async (a, ctx) => {
+    const channel = await ctx.client.channels.fetch(a.channelId);
+    if (!channel || !channel.isTextBased() || !("send" in channel)) {
+      throw new Error(`Channel ${a.channelId} is not a text channel that can receive messages.`);
+    }
+    const { channelId: _c, content, ...embed } = a;
+    const payload = buildMessagePayload({ content, embeds: [embed] });
+    const sent = await channel.send(payload);
+    return `Sent embed in message ${sent.id} to channel ${a.channelId}.`;
+  },
+});
+
 /** Base/connection tools. */
-export const baseTools: AnyToolDefinition[] = [login, listServers, getServerInfo, send];
+export const baseTools: AnyToolDefinition[] = [login, listServers, getServerInfo, send, sendEmbed];
