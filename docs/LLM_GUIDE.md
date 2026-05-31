@@ -63,10 +63,12 @@ log. Errors come back as `❌ <message>` with `isError: true`.
 
 ## 4. Tool domains at a glance
 
-`base`, `channels`, `roles`, `messages`, `reactions`, `forum`, `webhooks`,
-`members`, `moderation`, `guild`, `invites`, `events`, `polls`, `emojis`
-(+ stickers), `automod`, `audit`, `threads`, `commands` (slash commands),
-`raw`. Full list with permissions/intents: [`EXTENSION_PLAN.md`](./EXTENSION_PLAN.md).
+`base` (incl. bot presence), `channels`, `roles`, `messages`, `reactions`,
+`forum`, `webhooks`, `members` (incl. DM + prune), `moderation`, `guild`,
+`invites`, `events`, `polls`, `emojis` (+ stickers), `automod`, `audit`,
+`threads`, `commands` (slash commands), `voice` (stage instances + voice
+disconnect), `raw`. Full list with permissions/intents:
+[`EXTENSION_PLAN.md`](./EXTENSION_PLAN.md).
 
 ## 5. Reaching ANY endpoint — `discord_raw`
 

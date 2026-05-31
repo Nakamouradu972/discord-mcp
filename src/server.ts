@@ -7,7 +7,7 @@ import type { AnyToolDefinition, ToolContext } from "./core/types.js";
 import { allTools } from "./tools/index.js";
 
 /** Package metadata reported in the MCP handshake. */
-export const SERVER_INFO = { name: "discord-mcp", version: "2.2.0" } as const;
+export const SERVER_INFO = { name: "discord-mcp", version: "2.3.0" } as const;
 
 /**
  * Build a fully wired {@link McpServer} with every tool registered behind the
